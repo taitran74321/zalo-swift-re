@@ -486,8 +486,8 @@ extension SQLiteHost {
             case "get":
                 return try await get(name, Self.statement(statement))
             case "optimized-all":
-                let queries = (statement["queries"] as? [Any] ?? []).map(Self.query)
-                let params = (statement["params"] as? [Any] ?? []).map(Self.rows)
+                let queries: [String] = (statement["queries"] as? [Any] ?? []).map { Self.query($0) }
+                let params: [[[Any]]] = (statement["params"] as? [Any] ?? []).map { Self.rows($0) }
                 return try await optimizedAll(name, queries: queries, params: Unchecked(value: params))
             case "serialize":
                 let items = (statement["data"] as? [[String: Any]] ?? []).map { item -> SerializedItem in

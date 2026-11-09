@@ -251,7 +251,7 @@ private struct PollDetailCard: View {
             Button { open(.vote) } label: {
                 Text(buttonTitle(detail)).font(.system(size: 13, weight: .semibold)).frame(maxWidth: .infinity)
             }
-            .buttonStyle(.glass)
+            .olazGlassButtonStyle()
             .controlSize(.regular)
         }
         .padding(12)
@@ -404,7 +404,7 @@ struct PollDetailSheet: View {
                     Button { requestSubmit() } label: {
                         if busy { ProgressView().controlSize(.small) } else { Text("Xác nhận") }
                     }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .disabled(!canConfirm || busy)
                 }
             }
@@ -467,7 +467,7 @@ struct PollDetailSheet: View {
                     next.addRow()
                     self.draft = next
                 }
-                .buttonStyle(.glass).controlSize(.regular)
+                .olazGlassButtonStyle().controlSize(.regular)
                 .disabled(draft.hasDuplicates(in: detail))
             }
             if detail.closed {
@@ -706,7 +706,7 @@ struct PollCreateSheet: View {
                     }
                 }
                 Button("Thêm lựa chọn", systemImage: "plus") { draft.options.append("") }
-                    .buttonStyle(.glass)
+                    .olazGlassButtonStyle()
                     .disabled(draft.options.count >= config.maxOptions || draft.options.indices.contains { draft.isDuplicate(at: $0) })
             }
             DisclosureGroup(isExpanded: $showSettings) { settings.padding(.top, 8) } label: {
@@ -768,7 +768,7 @@ struct PollCreateSheet: View {
                 Button { Task { await create() } } label: {
                     if busy { ProgressView().controlSize(.small) } else { Text("Tạo bình chọn") }
                 }
-                .buttonStyle(.glassProminent)
+                .olazGlassProminentButtonStyle()
                 .disabled(issue != nil || !caps.canCreate || busy)
             }
         }

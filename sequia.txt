@@ -1,0 +1,7 @@
+https://claude.ai/chat/578dfa86-9bbc-4f2d-bdf0-56a6ae61734b
+
+cd ~/zalo-swift-re
+git apply ~/Downloads/sequoia-macos15.patch
+rm -rf .build build
+swift test
+./scripts/make-app.sh debug && open build/Olaz.app

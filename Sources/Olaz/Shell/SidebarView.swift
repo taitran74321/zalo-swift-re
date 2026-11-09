@@ -32,7 +32,7 @@ struct SidebarView: View {
             contacts
         }
         .listStyle(.sidebar)
-        .safeAreaBar(edge: .bottom) { SidebarAccountFooter() }
+        .olazSafeAreaBar(edge: .bottom) { SidebarAccountFooter() }
         // Something else (a menu command) asked for the transient destination: resolve it the way a click does.
         .onChange(of: shell.destination) { _, destination in
             if destination == .myCloud { select(.myCloud) }

@@ -86,7 +86,7 @@ private struct IncomingCallBanner: View {
             }
             Spacer(minLength: 12)
             Button("Mở cửa sổ cuộc gọi") { engine.showCallWindow() }
-                .buttonStyle(.glassProminent)
+                .olazGlassProminentButtonStyle()
                 .help("Trả lời hoặc từ chối trong cửa sổ cuộc gọi của Zalo")
             Button {
                 engine.call.incoming = nil
@@ -99,7 +99,7 @@ private struct IncomingCallBanner: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .frame(maxWidth: 460)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }

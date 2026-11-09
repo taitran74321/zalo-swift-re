@@ -137,7 +137,7 @@ struct ReminderComposeSheet: View {
             }
             VStack(alignment: .leading, spacing: 6) {
                 Text("Chọn thời gian").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
-                Picker("Chọn thời gian", selection: Binding(get: { choice }, set: pick)) {
+                Picker("Chọn thời gian", selection: Binding(get: { choice }, set: { pick($0) })) {
                     Text("15 phút nữa").tag(TimeChoice.in15)
                     Text("30 phút nữa").tag(TimeChoice.in30)
                     Text("9:00 ngày mai").tag(TimeChoice.tomorrow9)
@@ -331,7 +331,7 @@ struct SheetFooter: View {
                 Button(action: run) {
                     if busy { ProgressView().controlSize(.small) } else { Text(action) }
                 }
-                .buttonStyle(.glassProminent)
+                .olazGlassProminentButtonStyle()
                 .keyboardShortcut(.defaultAction)
                 .disabled(disabled || busy)
             }

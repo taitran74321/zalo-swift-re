@@ -237,7 +237,7 @@ struct ConversationDetail: View {
                 Text("Nhập mã PIN để mở trò chuyện")
             } actions: {
                 Button("Nhập mã PIN") { engine.conversationPrompt = .unlock(id: conversation.id) }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
             }
         } else if let conversation {
             ChatView(conversation: conversation)

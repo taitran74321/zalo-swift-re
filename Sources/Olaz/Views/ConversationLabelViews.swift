@@ -95,9 +95,9 @@ struct LabelManagerView: View {
                 Text("\(extras.labels.count)/\(extras.limits.maxLabels)").font(.system(size: 12)).foregroundStyle(.secondary)
                 Spacer()
                 Button("Thêm phân loại", systemImage: "plus") { editing = .new }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .disabled(extras.labels.count >= extras.limits.maxLabels)
-                Button("Xong") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.defaultAction)
+                Button("Xong") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.defaultAction)
             }
             .padding(16)
 
@@ -200,9 +200,9 @@ private struct LabelEditor: View {
             if let error { Text(error).font(.system(size: 12)).foregroundStyle(.red) }
             HStack {
                 Spacer()
-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
+                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
                 Button(existing == nil ? "Thêm" : "Lưu", action: submit)
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .disabled(trimmed.isEmpty || submitting)
                     .keyboardShortcut(.defaultAction)
             }

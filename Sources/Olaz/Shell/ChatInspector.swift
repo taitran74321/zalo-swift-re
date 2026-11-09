@@ -105,7 +105,7 @@ struct ChatInspector: View {
         let state = engine.conversationActions
         let muted = engine.isConversationMuted(id)
         let plan = ConversationMenuPlan.make(id: id, preset: .chatBox, state: state, unread: 0, muted: muted)
-        return GlassEffectContainer(spacing: 14) {
+        return OlazGlassEffectContainer(spacing: 14) {
             HStack(alignment: .top, spacing: 18) {
                 if !state.loaded || plan.mute != nil {
                     if muted {
@@ -389,7 +389,7 @@ private extension View {
     func glassAction() -> some View {
         menuStyle(.button)
             .menuIndicator(.hidden)
-            .buttonStyle(.glass)
+            .olazGlassButtonStyle()
             .buttonBorderShape(.circle)
             .controlSize(.large)
     }

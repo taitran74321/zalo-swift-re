@@ -24,7 +24,7 @@ struct ContactsSearchField: View {
             }
         }
         .padding(.horizontal, 12).padding(.vertical, 7)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
     }
 }
 
@@ -59,7 +59,7 @@ private struct ContactsToast: ViewModifier {
                         Text(toast.text).font(.system(size: 12.5, weight: .medium)).lineLimit(2)
                     }
                     .padding(.horizontal, 14).padding(.vertical, 9)
-                    .glassEffect(.regular, in: Capsule())
+                    .olazGlassEffect(.regular, in: Capsule())
                     .padding(.bottom, 22)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .accessibilityElement(children: .combine)
@@ -144,9 +144,9 @@ struct ContactActionButton: View {
     @ViewBuilder private var button: some View {
         let label = Image(systemName: symbol).font(.system(size: 17, weight: .semibold)).frame(width: 24, height: 24)
         if prominent {
-            Button(action: action) { label }.buttonStyle(.glassProminent)
+            Button(action: action) { label }.olazGlassProminentButtonStyle()
         } else {
-            Button(action: action) { label }.buttonStyle(.glass)
+            Button(action: action) { label }.olazGlassButtonStyle()
         }
     }
 }
@@ -215,7 +215,7 @@ struct FriendsList: View {
                 } description: {
                     Text("Tìm bạn bằng số điện thoại để gửi lời mời kết bạn.")
                 } actions: {
-                    Button("Thêm bạn") { shell.destination = .addFriend }.buttonStyle(.glass)
+                    Button("Thêm bạn") { shell.destination = .addFriend }.olazGlassButtonStyle()
                 }
                 // Fills the column so the search bar stays at the top instead of hugging a centered empty state.
                 .fillColumn()
@@ -238,10 +238,10 @@ struct FriendsList: View {
                 } primaryAction: { ids in
                     if let id = ids.first { engine.openContactConversation(id) }
                 }
-                .scrollEdgeEffectStyle(.soft, for: .top)
+                .olazScrollEdgeEffectStyle(.soft, for: .top)
             }
         }
-        .safeAreaBar(edge: .top) {
+        .olazSafeAreaBar(edge: .top) {
             ContactsSearchField(text: $query, prompt: "Tìm bạn")
                 .padding(.horizontal, 12).padding(.bottom, 6)
         }
@@ -308,7 +308,7 @@ struct FriendCard: View {
                 ContactCardHeader(avatar: friend.avatar, name: friend.name,
                                   secondaryName: friend.zaloName.isEmpty ? profile?.zaloName : friend.zaloName,
                                   status: status, online: friend.online) {
-                    GlassEffectContainer(spacing: 20) {
+                    OlazGlassEffectContainer(spacing: 20) {
                         HStack(spacing: 20) {
                             ContactActionButton(title: "Nhắn tin", symbol: "bubble.left.fill", prominent: true) {
                                 engine.openContactConversation(friend.id)
@@ -365,7 +365,7 @@ struct GroupsList: View {
                 } description: {
                     Text("Tạo nhóm để cùng nhau trò chuyện và trao đổi với bạn bè đồng nghiệp")
                 } actions: {
-                    Button("Tạo nhóm") { shell.composeGroup() }.buttonStyle(.glass)
+                    Button("Tạo nhóm") { shell.composeGroup() }.olazGlassButtonStyle()
                 }
                 .fillColumn()
             } else if groups.isEmpty {
@@ -381,10 +381,10 @@ struct GroupsList: View {
                 } primaryAction: { ids in
                     if let id = ids.first { engine.openContactConversation(id) }
                 }
-                .scrollEdgeEffectStyle(.soft, for: .top)
+                .olazScrollEdgeEffectStyle(.soft, for: .top)
             }
         }
-        .safeAreaBar(edge: .top) {
+        .olazSafeAreaBar(edge: .top) {
             ContactsSearchField(text: $query, prompt: "Tìm nhóm")
                 .padding(.horizontal, 12).padding(.bottom, 6)
         }
@@ -422,7 +422,7 @@ struct GroupCard: View {
                     Button { engine.openContactConversation(group.id) } label: {
                         Label("Mở trò chuyện", systemImage: "bubble.left.fill")
                     }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .controlSize(.large)
                 }
             }

@@ -112,7 +112,7 @@ struct CloudStorageCard: View {
             }
         }
         .padding(12)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private func legend(_ color: Color, _ title: String) -> some View {
@@ -241,10 +241,10 @@ struct CloudPlanView: View {
             Text(CloudFormat.size(plan.quota))
                 .font(.system(size: 13, weight: .semibold))
                 .padding(.horizontal, 12).padding(.vertical, 6)
-                .glassEffect(.regular, in: Capsule())
+                .olazGlassEffect(.regular, in: Capsule())
         }
         .padding(16)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
     private func planTitle(_ plan: CloudState.Plan) -> String {
@@ -283,7 +283,7 @@ struct CloudPlanView: View {
             }
         }
         .padding(16)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
     private var typeCard: some View {
@@ -309,7 +309,7 @@ struct CloudPlanView: View {
             }
         }
         .padding(16)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
     private func color(_ kind: CloudItemKind) -> Color {
@@ -344,7 +344,7 @@ struct CloudPlanView: View {
             infoRow("Khoá cloud", plan.hasKey ? "Đã có" : "Chưa có — mở Zalo trên điện thoại để đồng bộ")
         }
         .padding(.horizontal, 16).padding(.vertical, 6)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
     private func backupCard(_ plan: CloudState.Plan) -> some View {
@@ -358,7 +358,7 @@ struct CloudPlanView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
     private func toggleRow(_ title: String, _ on: Bool) -> some View {
@@ -414,7 +414,7 @@ struct CloudSettingsView: View {
                     if let message { Text(message).font(.system(size: 12)).foregroundStyle(.orange) }
                 }
                 .padding(16)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Hỗ trợ").font(.system(size: 15, weight: .semibold))
@@ -423,7 +423,7 @@ struct CloudSettingsView: View {
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             }
             .padding(20)
             .frame(maxWidth: 680)

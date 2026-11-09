@@ -118,7 +118,7 @@ struct LoginView: View {
                     } label: {
                         Label("Lấy mã mới", systemImage: "arrow.clockwise")
                     }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .controlSize(.large)
                 }
             }
@@ -145,7 +145,7 @@ struct LoginView: View {
             }
         case .failed:
             Button("Thử lại") { engine.refreshQR() }
-                .buttonStyle(.glassProminent)
+                .olazGlassProminentButtonStyle()
                 .controlSize(.large)
         default:
             VStack(alignment: .leading, spacing: 7) {

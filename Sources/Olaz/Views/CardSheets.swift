@@ -51,11 +51,11 @@ struct AliasSheet: View {
             }
             if let error { Text(error).font(.system(size: 12)).foregroundStyle(.orange).multilineTextAlignment(.center) }
             HStack(spacing: 10) {
-                Button("Hủy") { dismiss() }.keyboardShortcut(.cancelAction).buttonStyle(.glass).disabled(saving)
+                Button("Hủy") { dismiss() }.keyboardShortcut(.cancelAction).olazGlassButtonStyle().disabled(saving)
                 Button(action: save) {
                     if saving { ProgressView().controlSize(.small) } else { Text(removes ? "Xoá tên gợi nhớ" : "Xác nhận") }
                 }
-                .keyboardShortcut(.defaultAction).buttonStyle(.glassProminent).disabled(saving || nothingToSave)
+                .keyboardShortcut(.defaultAction).olazGlassProminentButtonStyle().disabled(saving || nothingToSave)
             }
         }
         .padding(24)
@@ -116,12 +116,12 @@ struct GroupInviteSheet: View {
             }
             if let error { Text(error).font(.system(size: 12)).foregroundStyle(.orange).multilineTextAlignment(.center) }
             HStack(spacing: 10) {
-                Button("Đóng") { dismiss() }.keyboardShortcut(.cancelAction).buttonStyle(.glass).disabled(joining)
+                Button("Đóng") { dismiss() }.keyboardShortcut(.cancelAction).olazGlassButtonStyle().disabled(joining)
                 if preview?.state == .preview {
                     Button(action: join) {
                         if joining { ProgressView().controlSize(.small) } else { Text("Tham gia") }
                     }
-                    .keyboardShortcut(.defaultAction).buttonStyle(.glassProminent).disabled(joining)
+                    .keyboardShortcut(.defaultAction).olazGlassProminentButtonStyle().disabled(joining)
                 }
             }
         }
@@ -222,7 +222,7 @@ struct StickerCategorySheet: View {
                 }
                 Text(category?.name.isEmpty == false ? category?.name ?? "" : "Bộ sticker").font(.system(size: 15, weight: .semibold)).lineLimit(1)
                 Spacer()
-                Button("Đóng") { dismiss() }.keyboardShortcut(.cancelAction).buttonStyle(.glass).controlSize(.small)
+                Button("Đóng") { dismiss() }.keyboardShortcut(.cancelAction).olazGlassButtonStyle().controlSize(.small)
             }
             .padding(16)
             Divider()

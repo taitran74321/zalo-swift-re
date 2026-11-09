@@ -46,7 +46,7 @@ struct SetupWelcomeStep: View {
             .padding(.top, 14)
             VStack(spacing: 10) {
                 Button("Bắt đầu hướng dẫn") { onFinish(true) }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .controlSize(.large)
                     .keyboardShortcut(.defaultAction)
                 Button("Bỏ qua, vào \(AppBrand.name)") { onFinish(false) }

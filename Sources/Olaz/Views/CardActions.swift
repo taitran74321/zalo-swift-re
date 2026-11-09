@@ -246,7 +246,7 @@ private struct CardNoticeOverlay: ViewModifier {
                 if let notice = center.notice, notice.conversation == nil || notice.conversation == engine.openConversationId {
                     Text(notice.text).font(.system(size: 12.5, weight: .medium)).lineLimit(3)
                         .padding(.horizontal, 14).padding(.vertical, 9)
-                        .glassEffect(.regular, in: Capsule())
+                        .olazGlassEffect(.regular, in: Capsule())
                         .padding(.bottom, 84)
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
                         .accessibilityAddTraits(.updatesFrequently)
@@ -443,14 +443,14 @@ struct ContactProfileSheet: View {
             Button { engine.openContactConversation(request.uid); dismiss() } label: {
                 Label("Nhắn tin", systemImage: "bubble.left.fill")
             }
-            .buttonStyle(.glassProminent)
+            .olazGlassProminentButtonStyle()
             if profile?.isFriend == true {
                 CallButtons(uid: request.uid)
             } else if !isOfficialAccount, prep == nil, profile != nil {
                 Button { Task { await beginRequest() } } label: {
                     if preparing { ProgressView().controlSize(.small) } else { Label("Kết bạn", systemImage: "person.badge.plus") }
                 }
-                .buttonStyle(.glass)
+                .olazGlassButtonStyle()
                 .disabled(preparing)
             }
         }
@@ -478,7 +478,7 @@ struct ContactProfileSheet: View {
                     Button(action: submit) {
                         if sending { ProgressView().controlSize(.small) } else { Label("Gửi lời mời kết bạn", systemImage: "person.badge.plus") }
                     }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .frame(maxWidth: .infinity)
                     .disabled(sending || requestPending || message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     if let result, !result.ok {
@@ -539,7 +539,7 @@ struct CallButtons: View {
             Button { engine.startCall(to: uid, video: true) } label: { Label("Video", systemImage: "video.fill") }
                 .help(engine.canCall ? "Gọi video" : CardActionText.callUnsupported)
         }
-        .buttonStyle(.glass)
+        .olazGlassButtonStyle()
         .disabled(!engine.canCall)
     }
 }

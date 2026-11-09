@@ -115,7 +115,7 @@ struct SetupSyncStep: View {
                         }
                     }
                 }
-                .buttonStyle(.glassProminent)
+                .olazGlassProminentButtonStyle()
                 .controlSize(.large)
                 .disabled(!canStart)
                 if !canStart, let reason = engine.transferStartBlockedReason {
@@ -249,7 +249,7 @@ struct SetupSyncStep: View {
                 engine.dismissTransfer()
                 onContinue(.done)
             }
-            .buttonStyle(.glassProminent)
+            .olazGlassProminentButtonStyle()
             .controlSize(.large)
             .keyboardShortcut(.defaultAction)
             .padding(.top, 6)
@@ -275,7 +275,7 @@ struct SetupSyncStep: View {
                 .fixedSize(horizontal: false, vertical: true)
             VStack(spacing: 10) {
                 Button("Thử lại") { retry(transfer) }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .controlSize(.large)
                     .disabled(!transfer.canRetry && !engine.canStartTransfer)
                 Button("Để sau", action: later)

@@ -265,7 +265,7 @@ struct MessageRow: View {
             }
         }
         .padding(.horizontal, 3).padding(.vertical, 3)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
     }
 
     private func barButton(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
@@ -651,7 +651,7 @@ private struct ReactionChips: View {
     @State private var showsDetail = false
 
     var body: some View {
-        GlassEffectContainer(spacing: 3) {
+        OlazGlassEffectContainer(spacing: 3) {
             HStack(spacing: 3) {
                 ForEach(reactions) { r in
                     Button { showsDetail = true } label: {
@@ -662,7 +662,7 @@ private struct ReactionChips: View {
                             }
                         }
                         .padding(.horizontal, 7).padding(.vertical, 3)
-                        .glassEffect(r.includesMe ? Glass.regular.tint(ChatPalette.accent(accentStored).opacity(0.4)) : Glass.regular, in: Capsule())
+                        .olazGlassEffect(r.includesMe ? OlazGlass.regular.tint(ChatPalette.accent(accentStored).opacity(0.4)) : OlazGlass.regular, in: Capsule())
                         .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -895,7 +895,8 @@ private final class VoicePlayer: ObservableObject {
     enum State { case idle, loading, playing, paused }
     @Published var state: State = .idle
     private var player: AVPlayer?
-    private var endObserver: NSObjectProtocol?
+    // nonisolated(unsafe): read by the nonisolated deinit (isolated deinit needs macOS 26).
+    nonisolated(unsafe) private var endObserver: NSObjectProtocol?
     private var loadTask: Task<Void, Never>?
 
     func toggle(_ url: URL) {
@@ -955,7 +956,7 @@ private final class VoicePlayer: ObservableObject {
         player = nil
     }
 
-    isolated deinit { removeObserver() }
+    deinit { if let endObserver { NotificationCenter.default.removeObserver(endObserver) } }
 }
 
 private struct VoiceView: View {

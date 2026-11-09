@@ -47,7 +47,7 @@ struct MediaFailureView: View {
                     Button(action: retry) {
                         Label("Thử lại", systemImage: "arrow.clockwise").font(.system(size: 12, weight: .medium))
                     }
-                    .buttonStyle(.glass)
+                    .olazGlassButtonStyle()
                     .controlSize(.small)
                 }
             }

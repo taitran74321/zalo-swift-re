@@ -1,0 +1,1583 @@
+diff --git a/Package.swift b/Package.swift
+index 78c98c8..514d278 100644
+--- a/Package.swift
++++ b/Package.swift
+@@ -3,7 +3,7 @@ import PackageDescription
+ 
+ let package = Package(
+     name: "Olaz",
+-    platforms: [.macOS("26.0")],
++    platforms: [.macOS(.v15)],
+     targets: [
+         .executableTarget(
+             name: "Olaz",
+diff --git a/Sources/Olaz/App/RootView.swift b/Sources/Olaz/App/RootView.swift
+index aa9c074..43f6551 100644
+--- a/Sources/Olaz/App/RootView.swift
++++ b/Sources/Olaz/App/RootView.swift
+@@ -139,7 +139,7 @@ struct RuntimeSetupView: View {
+                             .multilineTextAlignment(.center)
+                             .fixedSize(horizontal: false, vertical: true)
+                         Button("Thử lại") { engine.retryRuntimeSetup() }
+-                            .buttonStyle(.glassProminent)
++                            .olazGlassProminentButtonStyle()
+                             .keyboardShortcut(.defaultAction)
+                     }
+                 } else {
+diff --git a/Sources/Olaz/App/SetupFlowView.swift b/Sources/Olaz/App/SetupFlowView.swift
+index 9f71d6d..500696e 100644
+--- a/Sources/Olaz/App/SetupFlowView.swift
++++ b/Sources/Olaz/App/SetupFlowView.swift
+@@ -94,7 +94,7 @@ struct SetupCard<Content: View>: View {
+                 .padding([.top, .trailing, .bottom], 8)
+             }
+             .frame(width: width, height: height)
+-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: corner, style: .continuous))
++            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: corner, style: .continuous))
+             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
+             .frame(maxWidth: .infinity, maxHeight: .infinity)
+         }
+diff --git a/Sources/Olaz/App/SetupSyncStep.swift b/Sources/Olaz/App/SetupSyncStep.swift
+index 9eccf81..9eb1690 100644
+--- a/Sources/Olaz/App/SetupSyncStep.swift
++++ b/Sources/Olaz/App/SetupSyncStep.swift
+@@ -115,7 +115,7 @@ struct SetupSyncStep: View {
+                         }
+                     }
+                 }
+-                .buttonStyle(.glassProminent)
++                .olazGlassProminentButtonStyle()
+                 .controlSize(.large)
+                 .disabled(!canStart)
+                 if !canStart, let reason = engine.transferStartBlockedReason {
+@@ -249,7 +249,7 @@ struct SetupSyncStep: View {
+                 engine.dismissTransfer()
+                 onContinue(.done)
+             }
+-            .buttonStyle(.glassProminent)
++            .olazGlassProminentButtonStyle()
+             .controlSize(.large)
+             .keyboardShortcut(.defaultAction)
+             .padding(.top, 6)
+@@ -275,7 +275,7 @@ struct SetupSyncStep: View {
+                 .fixedSize(horizontal: false, vertical: true)
+             VStack(spacing: 10) {
+                 Button("Thử lại") { retry(transfer) }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .controlSize(.large)
+                     .disabled(!transfer.canRetry && !engine.canStartTransfer)
+                 Button("Để sau", action: later)
+diff --git a/Sources/Olaz/App/SetupWelcomeStep.swift b/Sources/Olaz/App/SetupWelcomeStep.swift
+index 0cda1c8..8f5a490 100644
+--- a/Sources/Olaz/App/SetupWelcomeStep.swift
++++ b/Sources/Olaz/App/SetupWelcomeStep.swift
+@@ -46,7 +46,7 @@ struct SetupWelcomeStep: View {
+             .padding(.top, 14)
+             VStack(spacing: 10) {
+                 Button("Bắt đầu hướng dẫn") { onFinish(true) }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .controlSize(.large)
+                     .keyboardShortcut(.defaultAction)
+                 Button("Bỏ qua, vào \(AppBrand.name)") { onFinish(false) }
+diff --git a/Sources/Olaz/Compat26.swift b/Sources/Olaz/Compat26.swift
+new file mode 100644
+index 0000000..ec79f06
+--- /dev/null
++++ b/Sources/Olaz/Compat26.swift
+@@ -0,0 +1,164 @@
++import SwiftUI
++
++// macOS 15 (Sequoia) compatibility layer.
++//
++// Olaz was written for macOS 26 (Liquid Glass). These wrappers use the macOS 26 API when the app runs on macOS 26 or later,
++// and fall back to the closest Sequoia look (materials, bordered buttons, safe-area insets) on macOS 15.
++
++// MARK: - Glass
++
++/// Stand-in for SwiftUI's `Glass` (macOS 26 only): `.regular`, `.tint(_:)`, `.interactive()`.
++struct OlazGlass {
++    var tintColor: Color?
++    var isInteractive = false
++
++    static var regular: OlazGlass { OlazGlass() }
++
++    func tint(_ color: Color?) -> OlazGlass {
++        var copy = self
++        copy.tintColor = color
++        return copy
++    }
++
++    func interactive(_ isEnabled: Bool = true) -> OlazGlass {
++        var copy = self
++        copy.isInteractive = isEnabled
++        return copy
++    }
++
++    @available(macOS 26.0, *)
++    var glass: Glass {
++        var g = Glass.regular
++        if let tintColor { g = g.tint(tintColor) }
++        if isInteractive { g = g.interactive() }
++        return g
++    }
++}
++
++extension View {
++    /// `glassEffect(_:in:)` on macOS 26; a material background on macOS 15.
++    @ViewBuilder
++    func olazGlassEffect<S: Shape>(_ glass: OlazGlass = .regular, in shape: S) -> some View {
++        if #available(macOS 26.0, *) {
++            glassEffect(glass.glass, in: shape)
++        } else {
++            background {
++                ZStack {
++                    shape.fill(.regularMaterial)
++                    if let tint = glass.tintColor { shape.fill(tint) }
++                    shape.stroke(Color(nsColor: .separatorColor), lineWidth: 0.5)
++                }
++            }
++        }
++    }
++
++    /// `glassEffectID(_:in:)` on macOS 26; nothing on macOS 15.
++    @ViewBuilder
++    func olazGlassEffectID<ID: Hashable & Sendable>(_ id: ID, in namespace: Namespace.ID) -> some View {
++        if #available(macOS 26.0, *) {
++            glassEffectID(id, in: namespace)
++        } else {
++            self
++        }
++    }
++
++    /// `.buttonStyle(.glass)` on macOS 26; `.bordered` on macOS 15.
++    @ViewBuilder
++    func olazGlassButtonStyle() -> some View {
++        if #available(macOS 26.0, *) {
++            buttonStyle(.glass)
++        } else {
++            buttonStyle(.bordered)
++        }
++    }
++
++    /// `.buttonStyle(.glassProminent)` on macOS 26; `.borderedProminent` on macOS 15.
++    @ViewBuilder
++    func olazGlassProminentButtonStyle() -> some View {
++        if #available(macOS 26.0, *) {
++            buttonStyle(.glassProminent)
++        } else {
++            buttonStyle(.borderedProminent)
++        }
++    }
++}
++
++/// `GlassEffectContainer` on macOS 26; a plain wrapper on macOS 15.
++struct OlazGlassEffectContainer<Content: View>: View {
++    let spacing: CGFloat?
++    let content: Content
++
++    init(spacing: CGFloat? = nil, @ViewBuilder content: () -> Content) {
++        self.spacing = spacing
++        self.content = content()
++    }
++
++    var body: some View {
++        if #available(macOS 26.0, *) {
++            GlassEffectContainer(spacing: spacing) { content }
++        } else {
++            content
++        }
++    }
++}
++
++// MARK: - Bars, scroll edges, toolbar
++
++enum OlazScrollEdgeEffectStyle { case soft, hard }
++
++extension View {
++    /// `safeAreaBar(edge:…)` on macOS 26; `safeAreaInset(edge:…)` with a bar background on macOS 15.
++    @ViewBuilder
++    func olazSafeAreaBar<V: View>(edge: VerticalEdge, alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil,
++                                  @ViewBuilder content: () -> V) -> some View {
++        let bar = content()
++        if #available(macOS 26.0, *) {
++            safeAreaBar(edge: edge, alignment: alignment, spacing: spacing) { bar }
++        } else {
++            safeAreaInset(edge: edge, alignment: alignment, spacing: spacing) { bar.background(.bar) }
++        }
++    }
++
++    /// `scrollEdgeEffectStyle(_:for:)` on macOS 26; nothing on macOS 15.
++    @ViewBuilder
++    func olazScrollEdgeEffectStyle(_ style: OlazScrollEdgeEffectStyle, for edges: Edge.Set) -> some View {
++        if #available(macOS 26.0, *) {
++            scrollEdgeEffectStyle(style == .hard ? .hard : .soft, for: edges)
++        } else {
++            self
++        }
++    }
++
++    /// `.toolbar { ToolbarSpacer(.flexible) }` on macOS 26; nothing on macOS 15.
++    @ViewBuilder
++    func olazFlexibleToolbarSpacer() -> some View {
++        if #available(macOS 26.0, *) {
++            toolbar { ToolbarSpacer(.flexible) }
++        } else {
++            self
++        }
++    }
++
++    /// Chat toolbar: header, call buttons, info buttons. macOS 26 adds the spacers and hides the header's shared glass background.
++    @ViewBuilder
++    func olazChatToolbar<H: View, C: View, I: View>(@ViewBuilder header: () -> H, @ViewBuilder calls: () -> C,
++                                                    @ViewBuilder info: () -> I) -> some View {
++        let h = header(), c = calls(), i = info()
++        if #available(macOS 26.0, *) {
++            toolbar {
++                ToolbarItem(placement: .primaryAction) { h }
++                    .sharedBackgroundVisibility(.hidden)
++                ToolbarSpacer(.flexible, placement: .primaryAction)
++                ToolbarItemGroup(placement: .primaryAction) { c }
++                ToolbarSpacer(.fixed, placement: .primaryAction)
++                ToolbarItemGroup(placement: .primaryAction) { i }
++            }
++        } else {
++            toolbar {
++                ToolbarItem(placement: .primaryAction) { h }
++                ToolbarItemGroup(placement: .primaryAction) { c }
++                ToolbarItemGroup(placement: .primaryAction) { i }
++            }
++        }
++    }
++}
+diff --git a/Sources/Olaz/Shell/ChatInspector.swift b/Sources/Olaz/Shell/ChatInspector.swift
+index 30c5849..2fcbd2e 100644
+--- a/Sources/Olaz/Shell/ChatInspector.swift
++++ b/Sources/Olaz/Shell/ChatInspector.swift
+@@ -105,7 +105,7 @@ struct ChatInspector: View {
+         let state = engine.conversationActions
+         let muted = engine.isConversationMuted(id)
+         let plan = ConversationMenuPlan.make(id: id, preset: .chatBox, state: state, unread: 0, muted: muted)
+-        return GlassEffectContainer(spacing: 14) {
++        return OlazGlassEffectContainer(spacing: 14) {
+             HStack(alignment: .top, spacing: 18) {
+                 if !state.loaded || plan.mute != nil {
+                     if muted {
+@@ -389,7 +389,7 @@ private extension View {
+     func glassAction() -> some View {
+         menuStyle(.button)
+             .menuIndicator(.hidden)
+-            .buttonStyle(.glass)
++            .olazGlassButtonStyle()
+             .buttonBorderShape(.circle)
+             .controlSize(.large)
+     }
+diff --git a/Sources/Olaz/Shell/ConversationListColumn.swift b/Sources/Olaz/Shell/ConversationListColumn.swift
+index 1abcbdd..22019bb 100644
+--- a/Sources/Olaz/Shell/ConversationListColumn.swift
++++ b/Sources/Olaz/Shell/ConversationListColumn.swift
+@@ -107,11 +107,11 @@ struct ConversationListColumn: View {
+     var body: some View {
+         let listing = self.listing
+         content(listing)
+-            .safeAreaBar(edge: .top) { header }
++            .olazSafeAreaBar(edge: .top) { header }
+             .columnTitle(title, subtitle: subtitle(listing))
+             // A column whose toolbar holds nothing but the title lets the title grow into the next section on macOS 27, which pushed
+             // the chat header to the right beside its buttons; the spacer takes this section's slack instead.
+-            .toolbar { ToolbarSpacer(.flexible) }
++            .olazFlexibleToolbarSpacer()
+             .sheet(isPresented: $showLabelManager) { LabelManagerView() }
+             .background { pinShortcuts(listing.pins) }
+             .task(id: shell.search) {
+@@ -196,7 +196,7 @@ struct ConversationListColumn: View {
+             }
+         }
+         .listStyle(.inset)
+-        .scrollEdgeEffectStyle(.soft, for: .top)
++        .olazScrollEdgeEffectStyle(.soft, for: .top)
+     }
+ 
+     private func rows(_ items: [ListItem]) -> some View {
+@@ -302,7 +302,7 @@ private struct CreateGroupButton: View {
+                 .font(.system(size: 12.5, weight: .medium))
+                 .foregroundStyle(.secondary)
+                 .frame(width: 30, height: 30)
+-                .glassEffect(.regular.interactive(), in: Circle())
++                .olazGlassEffect(.regular.interactive(), in: Circle())
+                 .contentShape(Circle())
+         }
+         .buttonStyle(.plain)
+diff --git a/Sources/Olaz/Shell/ConversationListLabelFilter.swift b/Sources/Olaz/Shell/ConversationListLabelFilter.swift
+index 6c6b20d..7792a43 100644
+--- a/Sources/Olaz/Shell/ConversationListLabelFilter.swift
++++ b/Sources/Olaz/Shell/ConversationListLabelFilter.swift
+@@ -33,7 +33,7 @@ struct ConversationListLabelFilter: View {
+                 .font(.system(size: 13, weight: .medium))
+                 .foregroundStyle(active == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+                 .frame(width: 30, height: 30)
+-                .glassEffect(.regular.interactive(), in: Circle())
++                .olazGlassEffect(.regular.interactive(), in: Circle())
+                 .contentShape(Circle())
+         }
+         .menuStyle(.button)
+@@ -76,7 +76,7 @@ struct ConversationListLabelChip: View {
+         }
+         .padding(.leading, 10).padding(.trailing, 5)
+         .frame(height: 24)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+         .accessibilityElement(children: .contain)
+     }
+ }
+diff --git a/Sources/Olaz/Shell/ConversationListSearchField.swift b/Sources/Olaz/Shell/ConversationListSearchField.swift
+index 36780b0..faa19a9 100644
+--- a/Sources/Olaz/Shell/ConversationListSearchField.swift
++++ b/Sources/Olaz/Shell/ConversationListSearchField.swift
+@@ -34,7 +34,7 @@ struct ConversationListSearchField: View {
+         }
+         .padding(.horizontal, 10)
+         .frame(height: 30)
+-        .glassEffect(.regular.interactive(), in: Capsule())
++        .olazGlassEffect(.regular.interactive(), in: Capsule())
+         .overlay(Capsule().strokeBorder(.tint.opacity(focused ? 0.9 : 0), lineWidth: 1.5))
+         .animation(.smooth(duration: 0.15), value: focused)
+         .contentShape(Capsule())
+diff --git a/Sources/Olaz/Shell/ConversationListStates.swift b/Sources/Olaz/Shell/ConversationListStates.swift
+index 8c4b7e2..d1fb897 100644
+--- a/Sources/Olaz/Shell/ConversationListStates.swift
++++ b/Sources/Olaz/Shell/ConversationListStates.swift
+@@ -31,7 +31,7 @@ struct ConversationListBanner: View {
+                 .foregroundStyle(.secondary)
+                 .frame(maxWidth: .infinity, alignment: .leading)
+             if let actionTitle, let action {
+-                Button(actionTitle, action: action).buttonStyle(.glass).controlSize(.small)
++                Button(actionTitle, action: action).olazGlassButtonStyle().controlSize(.small)
+             }
+         }
+         .padding(.horizontal, 11).padding(.vertical, 9)
+diff --git a/Sources/Olaz/Shell/QuickSwitcher.swift b/Sources/Olaz/Shell/QuickSwitcher.swift
+index 6f7cf62..bd0e80d 100644
+--- a/Sources/Olaz/Shell/QuickSwitcher.swift
++++ b/Sources/Olaz/Shell/QuickSwitcher.swift
+@@ -131,7 +131,7 @@ private struct QuickSwitcherPanel: View {
+                 footer
+             }
+             .frame(width: 560)
+-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
++            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+             .shadow(color: .black.opacity(0.22), radius: 30, y: 12)
+             // Clicks on the panel's own padding must not fall through to the dim layer and close it.
+             .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+@@ -207,7 +207,7 @@ private struct QuickSwitcherPanel: View {
+                     .padding(6)
+                 }
+                 .frame(maxHeight: 360)
+-                .scrollEdgeEffectStyle(.soft, for: .vertical)
++                .olazScrollEdgeEffectStyle(.soft, for: .vertical)
+                 .onChange(of: scrollRequest) { _, request in
+                     if let request { proxy.scrollTo(request.id) }
+                 }
+diff --git a/Sources/Olaz/Shell/SidebarView.swift b/Sources/Olaz/Shell/SidebarView.swift
+index aaa9086..32c4a43 100644
+--- a/Sources/Olaz/Shell/SidebarView.swift
++++ b/Sources/Olaz/Shell/SidebarView.swift
+@@ -32,7 +32,7 @@ struct SidebarView: View {
+             contacts
+         }
+         .listStyle(.sidebar)
+-        .safeAreaBar(edge: .bottom) { SidebarAccountFooter() }
++        .olazSafeAreaBar(edge: .bottom) { SidebarAccountFooter() }
+         // Something else (a menu command) asked for the transient destination: resolve it the way a click does.
+         .onChange(of: shell.destination) { _, destination in
+             if destination == .myCloud { select(.myCloud) }
+diff --git a/Sources/Olaz/Shell/Tour.swift b/Sources/Olaz/Shell/Tour.swift
+index f52d3c2..4b2c6a2 100644
+--- a/Sources/Olaz/Shell/Tour.swift
++++ b/Sources/Olaz/Shell/Tour.swift
+@@ -156,10 +156,10 @@ private struct CoachMarkCard: View {
+                 Spacer()
+                 if step.previous != nil {
+                     Button("Quay lại") { shell.retreatTour() }
+-                        .buttonStyle(.glass)
++                        .olazGlassButtonStyle()
+                 }
+                 Button(step.next == nil ? "Xong" : "Tiếp") { shell.advanceTour() }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .keyboardShortcut(.defaultAction)
+             }
+             .controlSize(.regular)
+diff --git a/Sources/Olaz/Views/CallViews.swift b/Sources/Olaz/Views/CallViews.swift
+index 03dd507..4b53951 100644
+--- a/Sources/Olaz/Views/CallViews.swift
++++ b/Sources/Olaz/Views/CallViews.swift
+@@ -86,7 +86,7 @@ private struct IncomingCallBanner: View {
+             }
+             Spacer(minLength: 12)
+             Button("Mở cửa sổ cuộc gọi") { engine.showCallWindow() }
+-                .buttonStyle(.glassProminent)
++                .olazGlassProminentButtonStyle()
+                 .help("Trả lời hoặc từ chối trong cửa sổ cuộc gọi của Zalo")
+             Button {
+                 engine.call.incoming = nil
+@@ -99,7 +99,7 @@ private struct IncomingCallBanner: View {
+         .padding(.horizontal, 14)
+         .padding(.vertical, 10)
+         .frame(maxWidth: 460)
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+         .accessibilityElement(children: .combine)
+     }
+ }
+diff --git a/Sources/Olaz/Views/CardActions.swift b/Sources/Olaz/Views/CardActions.swift
+index 01c12c9..9c058d6 100644
+--- a/Sources/Olaz/Views/CardActions.swift
++++ b/Sources/Olaz/Views/CardActions.swift
+@@ -246,7 +246,7 @@ private struct CardNoticeOverlay: ViewModifier {
+                 if let notice = center.notice, notice.conversation == nil || notice.conversation == engine.openConversationId {
+                     Text(notice.text).font(.system(size: 12.5, weight: .medium)).lineLimit(3)
+                         .padding(.horizontal, 14).padding(.vertical, 9)
+-                        .glassEffect(.regular, in: Capsule())
++                        .olazGlassEffect(.regular, in: Capsule())
+                         .padding(.bottom, 84)
+                         .transition(.opacity.combined(with: .move(edge: .bottom)))
+                         .accessibilityAddTraits(.updatesFrequently)
+@@ -443,14 +443,14 @@ struct ContactProfileSheet: View {
+             Button { engine.openContactConversation(request.uid); dismiss() } label: {
+                 Label("Nhắn tin", systemImage: "bubble.left.fill")
+             }
+-            .buttonStyle(.glassProminent)
++            .olazGlassProminentButtonStyle()
+             if profile?.isFriend == true {
+                 CallButtons(uid: request.uid)
+             } else if !isOfficialAccount, prep == nil, profile != nil {
+                 Button { Task { await beginRequest() } } label: {
+                     if preparing { ProgressView().controlSize(.small) } else { Label("Kết bạn", systemImage: "person.badge.plus") }
+                 }
+-                .buttonStyle(.glass)
++                .olazGlassButtonStyle()
+                 .disabled(preparing)
+             }
+         }
+@@ -478,7 +478,7 @@ struct ContactProfileSheet: View {
+                     Button(action: submit) {
+                         if sending { ProgressView().controlSize(.small) } else { Label("Gửi lời mời kết bạn", systemImage: "person.badge.plus") }
+                     }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .frame(maxWidth: .infinity)
+                     .disabled(sending || requestPending || message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                     if let result, !result.ok {
+@@ -539,7 +539,7 @@ struct CallButtons: View {
+             Button { engine.startCall(to: uid, video: true) } label: { Label("Video", systemImage: "video.fill") }
+                 .help(engine.canCall ? "Gọi video" : CardActionText.callUnsupported)
+         }
+-        .buttonStyle(.glass)
++        .olazGlassButtonStyle()
+         .disabled(!engine.canCall)
+     }
+ }
+diff --git a/Sources/Olaz/Views/CardSheets.swift b/Sources/Olaz/Views/CardSheets.swift
+index 5c9084c..1799d7b 100644
+--- a/Sources/Olaz/Views/CardSheets.swift
++++ b/Sources/Olaz/Views/CardSheets.swift
+@@ -51,11 +51,11 @@ struct AliasSheet: View {
+             }
+             if let error { Text(error).font(.system(size: 12)).foregroundStyle(.orange).multilineTextAlignment(.center) }
+             HStack(spacing: 10) {
+-                Button("Hủy") { dismiss() }.keyboardShortcut(.cancelAction).buttonStyle(.glass).disabled(saving)
++                Button("Hủy") { dismiss() }.keyboardShortcut(.cancelAction).olazGlassButtonStyle().disabled(saving)
+                 Button(action: save) {
+                     if saving { ProgressView().controlSize(.small) } else { Text(removes ? "Xoá tên gợi nhớ" : "Xác nhận") }
+                 }
+-                .keyboardShortcut(.defaultAction).buttonStyle(.glassProminent).disabled(saving || nothingToSave)
++                .keyboardShortcut(.defaultAction).olazGlassProminentButtonStyle().disabled(saving || nothingToSave)
+             }
+         }
+         .padding(24)
+@@ -116,12 +116,12 @@ struct GroupInviteSheet: View {
+             }
+             if let error { Text(error).font(.system(size: 12)).foregroundStyle(.orange).multilineTextAlignment(.center) }
+             HStack(spacing: 10) {
+-                Button("Đóng") { dismiss() }.keyboardShortcut(.cancelAction).buttonStyle(.glass).disabled(joining)
++                Button("Đóng") { dismiss() }.keyboardShortcut(.cancelAction).olazGlassButtonStyle().disabled(joining)
+                 if preview?.state == .preview {
+                     Button(action: join) {
+                         if joining { ProgressView().controlSize(.small) } else { Text("Tham gia") }
+                     }
+-                    .keyboardShortcut(.defaultAction).buttonStyle(.glassProminent).disabled(joining)
++                    .keyboardShortcut(.defaultAction).olazGlassProminentButtonStyle().disabled(joining)
+                 }
+             }
+         }
+@@ -222,7 +222,7 @@ struct StickerCategorySheet: View {
+                 }
+                 Text(category?.name.isEmpty == false ? category?.name ?? "" : "Bộ sticker").font(.system(size: 15, weight: .semibold)).lineLimit(1)
+                 Spacer()
+-                Button("Đóng") { dismiss() }.keyboardShortcut(.cancelAction).buttonStyle(.glass).controlSize(.small)
++                Button("Đóng") { dismiss() }.keyboardShortcut(.cancelAction).olazGlassButtonStyle().controlSize(.small)
+             }
+             .padding(16)
+             Divider()
+diff --git a/Sources/Olaz/Views/ChatComposer.swift b/Sources/Olaz/Views/ChatComposer.swift
+index b95594d..761a292 100644
+--- a/Sources/Olaz/Views/ChatComposer.swift
++++ b/Sources/Olaz/Views/ChatComposer.swift
+@@ -54,7 +54,7 @@ struct ChatComposer: View {
+                 .font(.system(size: 11.5))
+                 .foregroundStyle(.secondary)
+                 .padding(.horizontal, 11).padding(.vertical, 4)
+-                .glassEffect(.regular, in: Capsule())
++                .olazGlassEffect(.regular, in: Capsule())
+                 .frame(maxWidth: .infinity, alignment: .leading)
+                 .transition(.opacity)
+             }
+@@ -73,7 +73,7 @@ struct ChatComposer: View {
+                 }
+                 .fixedSize(horizontal: false, vertical: true)
+                 .padding(.horizontal, 12).padding(.vertical, 8)
+-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
++                .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                 .transition(.move(edge: .bottom).combined(with: .opacity))
+             }
+             if suggestionsOpen {
+@@ -86,7 +86,7 @@ struct ChatComposer: View {
+                     .transition(.move(edge: .bottom).combined(with: .opacity))
+             }
+             // Container spacing below the stack spacing: the discs and the field stay separate shapes instead of melting together.
+-            GlassEffectContainer(spacing: 4) {
++            OlazGlassEffectContainer(spacing: 4) {
+                 HStack(alignment: .bottom, spacing: 8) {
+                     // Extra room: with Dictation on, macOS shows its glass mic chip just left of the insertion point,
+                     // which reaches past the field's leading edge.
+@@ -150,7 +150,7 @@ struct ChatComposer: View {
+             Image(systemName: "plus").font(.system(size: 16, weight: .semibold))
+                 .frame(width: 36, height: 36)
+                 .contentShape(Circle())
+-                .glassEffect(.regular.interactive(), in: Circle())
++                .olazGlassEffect(.regular.interactive(), in: Circle())
+         }
+         .menuStyle(.button)
+         .menuIndicator(.hidden)
+@@ -199,7 +199,7 @@ struct ChatComposer: View {
+             }
+         }
+         .padding(.leading, 14).padding(.trailing, 6)
+-        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 19, style: .continuous))
++        .olazGlassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 19, style: .continuous))
+     }
+ 
+     /// 👍 while the box is empty, the arrow once there is something to send; the two glass discs morph into each other.
+@@ -210,8 +210,8 @@ struct ChatComposer: View {
+                     Text("👍").font(.system(size: 18)).frame(width: 36, height: 36).contentShape(Circle())
+                 }
+                 .buttonStyle(.plain)
+-                .glassEffect(.regular.interactive(), in: Circle())
+-                .glassEffectID("send", in: glassNamespace)
++                .olazGlassEffect(.regular.interactive(), in: Circle())
++                .olazGlassEffectID("send", in: glassNamespace)
+                 .help("Gửi biểu tượng thích")
+                 .accessibilityLabel("Gửi biểu tượng thích")
+             } else {
+@@ -220,8 +220,8 @@ struct ChatComposer: View {
+                         .frame(width: 36, height: 36).contentShape(Circle())
+                 }
+                 .buttonStyle(.plain)
+-                .glassEffect(.regular.tint(ChatPalette.accent(accentStored)).interactive(), in: Circle())
+-                .glassEffectID("send", in: glassNamespace)
++                .olazGlassEffect(.regular.tint(ChatPalette.accent(accentStored)).interactive(), in: Circle())
++                .olazGlassEffectID("send", in: glassNamespace)
+                 .help("Gửi")
+                 .accessibilityLabel("Gửi tin nhắn")
+             }
+@@ -392,7 +392,7 @@ private struct MentionSuggestions: View {
+             }
+         }
+         .frame(height: min(CGFloat(candidates.count) * (rowHeight + 2) + 12, 6.5 * (rowHeight + 2)))
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+         .accessibilityElement(children: .contain)
+         .accessibilityLabel("Gợi ý nhắc thành viên")
+     }
+diff --git a/Sources/Olaz/Views/ChatView.swift b/Sources/Olaz/Views/ChatView.swift
+index e567d63..d6ce3b0 100644
+--- a/Sources/Olaz/Views/ChatView.swift
++++ b/Sources/Olaz/Views/ChatView.swift
+@@ -37,7 +37,7 @@ struct ChatView: View {
+                     } actions: {
+                         if engine.canStartTransfer {
+                             Button("Đồng bộ tin nhắn", systemImage: "iphone.and.arrow.forward") { engine.startTransfer() }
+-                                .buttonStyle(.glassProminent)
++                                .olazGlassProminentButtonStyle()
+                         }
+                     }
+                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+@@ -55,10 +55,10 @@ struct ChatView: View {
+             }
+         }
+         .background { ChatWallpaperBackground() }
+-        .safeAreaBar(edge: .top, spacing: 0) {
++        .olazSafeAreaBar(edge: .top, spacing: 0) {
+             PinnedBar(conversationId: id, open: openPin)
+         }
+-        .safeAreaBar(edge: .bottom, spacing: 0) {
++        .olazSafeAreaBar(edge: .bottom, spacing: 0) {
+             ChatComposer(
+                 name: conversation.displayName,
+                 conversationId: id,
+@@ -79,31 +79,24 @@ struct ChatView: View {
+         } message: {
+             Text(notice == .like ? "Không gửi được biểu tượng 👍. Hãy thử lại." : "Nội dung đã được trả lại vào ô soạn thảo. Hãy thử gửi lại.")
+         }
+-        .toolbar {
+-            // macOS 27 lays the detail column's toolbar items out from its leading edge, so the header (avatar, name, subtitle)
+-            // is the first item, like Mail's, and the flexible spacer keeps the buttons at the trailing edge. A toolbar item has a
+-            // fixed ideal width, so the header is capped at what the column leaves beside the buttons, or a long name would push
+-            // them into the overflow menu; the name truncates instead.
+-            ToolbarItem(placement: .primaryAction) {
+-                header(subtitle: subtitle(last: loaded?.last))
+-                    .frame(maxWidth: max(0, columnWidth - Self.toolbarButtonsRoom), alignment: .leading)
+-            }
+-            .sharedBackgroundVisibility(.hidden)
+-            ToolbarSpacer(.flexible, placement: .primaryAction)
+-            ToolbarItemGroup(placement: .primaryAction) {
+-                ChatCallButtons(conversation: conversation)
+-            }
+-            ToolbarSpacer(.fixed, placement: .primaryAction)
+-            ToolbarItemGroup(placement: .primaryAction) {
+-                Button {
+-                    shell.toggleInspector()
+-                } label: {
+-                    Label("Thông tin", systemImage: "sidebar.right")
+-                }
+-                .help("Thông tin (⌥⌘I)")
+-                .tourAnchor(.toolbar, arrowEdge: .bottom)
+-                ConversationHeaderMenu(conversationId: id)
++        // macOS 27 lays the detail column's toolbar items out from its leading edge, so the header (avatar, name, subtitle)
++        // is the first item, like Mail's, and the flexible spacer keeps the buttons at the trailing edge. A toolbar item has a
++        // fixed ideal width, so the header is capped at what the column leaves beside the buttons, or a long name would push
++        // them into the overflow menu; the name truncates instead. (Spacers only on macOS 26+, see Compat26.swift.)
++        .olazChatToolbar {
++            header(subtitle: subtitle(last: loaded?.last))
++                .frame(maxWidth: max(0, columnWidth - Self.toolbarButtonsRoom), alignment: .leading)
++        } calls: {
++            ChatCallButtons(conversation: conversation)
++        } info: {
++            Button {
++                shell.toggleInspector()
++            } label: {
++                Label("Thông tin", systemImage: "sidebar.right")
+             }
++            .help("Thông tin (⌥⌘I)")
++            .tourAnchor(.toolbar, arrowEdge: .bottom)
++            ConversationHeaderMenu(conversationId: id)
+         }
+         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { columnWidth = $0 }
+         .cardActionPresenter()
+@@ -352,8 +345,8 @@ private struct MessageList: View {
+             // Only the initial offset is anchored; later size changes must not yank the view.
+             .defaultScrollAnchor(.bottom, for: .initialOffset)
+             .scrollPosition(id: $topId, anchor: .top)
+-            .scrollEdgeEffectStyle(.hard, for: .top)
+-            .scrollEdgeEffectStyle(.soft, for: .bottom)
++            .olazScrollEdgeEffectStyle(.hard, for: .top)
++            .olazScrollEdgeEffectStyle(.soft, for: .bottom)
+             .onScrollGeometryChange(for: Metrics.self) { geo in
+                 Metrics(top: geo.contentOffset.y + geo.contentInsets.top,
+                         fromBottom: geo.contentSize.height - geo.visibleRect.maxY,
+@@ -422,7 +415,7 @@ private struct MessageList: View {
+                     } label: {
+                         Image(systemName: "chevron.down").font(.system(size: 13, weight: .bold))
+                     }
+-                    .buttonStyle(.glass)
++                    .olazGlassButtonStyle()
+                     .buttonBorderShape(.circle)
+                     .padding(14)
+                     .transition(.scale.combined(with: .opacity))
+@@ -465,7 +458,7 @@ private struct DaySeparator: View {
+         .font(.system(size: 11))
+         .foregroundStyle(.secondary)
+         .padding(.horizontal, 11).padding(.vertical, 4)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+         .frame(maxWidth: .infinity)
+         .padding(.top, 14).padding(.bottom, 6)
+         .accessibilityElement(children: .combine)
+diff --git a/Sources/Olaz/Views/CloudMediaView.swift b/Sources/Olaz/Views/CloudMediaView.swift
+index bcbe1e3..2a06017 100644
+--- a/Sources/Olaz/Views/CloudMediaView.swift
++++ b/Sources/Olaz/Views/CloudMediaView.swift
+@@ -160,7 +160,7 @@ struct CloudMediaView: View {
+ 
+     var body: some View {
+         content
+-            .safeAreaBar(edge: .top) { kindFilter }
++            .olazSafeAreaBar(edge: .top) { kindFilter }
+             .safeAreaInset(edge: .bottom) { selectionBar }
+             .overlay(alignment: .bottom) { noticeView }
+             .navigationTitle(title)
+@@ -267,7 +267,7 @@ struct CloudMediaView: View {
+                 .padding(.horizontal, 16).padding(.vertical, 8)
+                 loadingFooter
+             }
+-            .scrollEdgeEffectStyle(.soft, for: .top)
++            .olazScrollEdgeEffectStyle(.soft, for: .top)
+         } else {
+             List {
+                 ForEach(model.items) { item in
+@@ -320,13 +320,13 @@ struct CloudMediaView: View {
+                 Text(chosen.isEmpty ? "Chọn các mục để xoá" : "Đã chọn \(chosen.count) • \(CloudFormat.size(chosen.reduce(0) { $0 + $1.size }))")
+                     .font(.system(size: 13, weight: .medium))
+                 Spacer()
+-                Button("Chọn tất cả") { model.selection = Set(model.items.map(\.id)) }.buttonStyle(.glass)
++                Button("Chọn tất cả") { model.selection = Set(model.items.map(\.id)) }.olazGlassButtonStyle()
+                 Button("Xoá…", role: .destructive) { deleteTargets = chosen }
+-                    .buttonStyle(.glassProminent).tint(.red)
++                    .olazGlassProminentButtonStyle().tint(.red)
+                     .disabled(chosen.isEmpty || deleting)
+             }
+             .padding(.horizontal, 16).padding(.vertical, 10)
+-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
++            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+             .padding(.horizontal, 20).padding(.bottom, 12)
+             .transition(.move(edge: .bottom).combined(with: .opacity))
+         }
+@@ -336,7 +336,7 @@ struct CloudMediaView: View {
+         if let notice {
+             Text(notice).font(.system(size: 12.5, weight: .medium))
+                 .padding(.horizontal, 14).padding(.vertical, 9)
+-                .glassEffect(.regular, in: Capsule())
++                .olazGlassEffect(.regular, in: Capsule())
+                 .padding(.bottom, 70)
+                 .transition(.move(edge: .bottom).combined(with: .opacity))
+         }
+diff --git a/Sources/Olaz/Views/CloudPreviewSheet.swift b/Sources/Olaz/Views/CloudPreviewSheet.swift
+index 00f15a1..ad38610 100644
+--- a/Sources/Olaz/Views/CloudPreviewSheet.swift
++++ b/Sources/Olaz/Views/CloudPreviewSheet.swift
+@@ -46,7 +46,7 @@ struct CloudPreviewSheet: View {
+             }
+             Spacer()
+             Button { dismiss() } label: { Image(systemName: "xmark") }
+-                .buttonStyle(.glass).buttonBorderShape(.circle).keyboardShortcut(.cancelAction)
++                .olazGlassButtonStyle().buttonBorderShape(.circle).keyboardShortcut(.cancelAction)
+         }
+         .padding(.horizontal, 18).padding(.vertical, 12)
+     }
+@@ -102,9 +102,9 @@ struct CloudPreviewSheet: View {
+             Spacer()
+             if case .ready(_, let staged) = phase {
+                 Button("Mở bằng ứng dụng khác") { openElsewhere(staged) }
+-                    .buttonStyle(.glass).disabled(staged == nil)
++                    .olazGlassButtonStyle().disabled(staged == nil)
+                 Button("Lưu về máy…", systemImage: "square.and.arrow.down") { save() }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+             }
+         }
+         .padding(.horizontal, 18).padding(.vertical, 12)
+diff --git a/Sources/Olaz/Views/CloudView.swift b/Sources/Olaz/Views/CloudView.swift
+index b28b372..bfc3b73 100644
+--- a/Sources/Olaz/Views/CloudView.swift
++++ b/Sources/Olaz/Views/CloudView.swift
+@@ -112,7 +112,7 @@ struct CloudStorageCard: View {
+             }
+         }
+         .padding(12)
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+     }
+ 
+     private func legend(_ color: Color, _ title: String) -> some View {
+@@ -241,10 +241,10 @@ struct CloudPlanView: View {
+             Text(CloudFormat.size(plan.quota))
+                 .font(.system(size: 13, weight: .semibold))
+                 .padding(.horizontal, 12).padding(.vertical, 6)
+-                .glassEffect(.regular, in: Capsule())
++                .olazGlassEffect(.regular, in: Capsule())
+         }
+         .padding(16)
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+     }
+ 
+     private func planTitle(_ plan: CloudState.Plan) -> String {
+@@ -283,7 +283,7 @@ struct CloudPlanView: View {
+             }
+         }
+         .padding(16)
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+     }
+ 
+     private var typeCard: some View {
+@@ -309,7 +309,7 @@ struct CloudPlanView: View {
+             }
+         }
+         .padding(16)
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+     }
+ 
+     private func color(_ kind: CloudItemKind) -> Color {
+@@ -344,7 +344,7 @@ struct CloudPlanView: View {
+             infoRow("Khoá cloud", plan.hasKey ? "Đã có" : "Chưa có — mở Zalo trên điện thoại để đồng bộ")
+         }
+         .padding(.horizontal, 16).padding(.vertical, 6)
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+     }
+ 
+     private func backupCard(_ plan: CloudState.Plan) -> some View {
+@@ -358,7 +358,7 @@ struct CloudPlanView: View {
+         }
+         .padding(16)
+         .frame(maxWidth: .infinity, alignment: .leading)
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+     }
+ 
+     private func toggleRow(_ title: String, _ on: Bool) -> some View {
+@@ -414,7 +414,7 @@ struct CloudSettingsView: View {
+                     if let message { Text(message).font(.system(size: 12)).foregroundStyle(.orange) }
+                 }
+                 .padding(16)
+-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
++                .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+ 
+                 VStack(alignment: .leading, spacing: 6) {
+                     Text("Hỗ trợ").font(.system(size: 15, weight: .semibold))
+@@ -423,7 +423,7 @@ struct CloudSettingsView: View {
+                 }
+                 .padding(16)
+                 .frame(maxWidth: .infinity, alignment: .leading)
+-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
++                .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+             }
+             .padding(20)
+             .frame(maxWidth: 680)
+diff --git a/Sources/Olaz/Views/ComposerSheets.swift b/Sources/Olaz/Views/ComposerSheets.swift
+index 77eb8dc..665055c 100644
+--- a/Sources/Olaz/Views/ComposerSheets.swift
++++ b/Sources/Olaz/Views/ComposerSheets.swift
+@@ -331,7 +331,7 @@ struct SheetFooter: View {
+                 Button(action: run) {
+                     if busy { ProgressView().controlSize(.small) } else { Text(action) }
+                 }
+-                .buttonStyle(.glassProminent)
++                .olazGlassProminentButtonStyle()
+                 .keyboardShortcut(.defaultAction)
+                 .disabled(disabled || busy)
+             }
+diff --git a/Sources/Olaz/Views/ContactsRequestsView.swift b/Sources/Olaz/Views/ContactsRequestsView.swift
+index 09d97d7..f4c33bb 100644
+--- a/Sources/Olaz/Views/ContactsRequestsView.swift
++++ b/Sources/Olaz/Views/ContactsRequestsView.swift
+@@ -40,7 +40,7 @@ struct RequestsList: View {
+                         }
+                     }
+                 }
+-                .scrollEdgeEffectStyle(.soft, for: .top)
++                .olazScrollEdgeEffectStyle(.soft, for: .top)
+             }
+         }
+         .columnTitle("Lời mời kết bạn", subtitle: "\(engine.contacts.pendingRequestCount) lời mời đang chờ")
+@@ -136,11 +136,11 @@ private struct RequestCard: View {
+                 ContactCardHeader(avatar: request.avatar, name: request.name, status: statusLine) {
+                     HStack(spacing: 10) {
+                         if received {
+-                            Button("Từ chối") { perform(.decline) }.buttonStyle(.glass)
++                            Button("Từ chối") { perform(.decline) }.olazGlassButtonStyle()
+                             Button { perform(.accept) } label: { Label("Đồng ý", systemImage: "checkmark") }
+-                                .buttonStyle(.glassProminent)
++                                .olazGlassProminentButtonStyle()
+                         } else {
+-                            Button("Thu hồi lời mời") { perform(.cancel) }.buttonStyle(.glass)
++                            Button("Thu hồi lời mời") { perform(.cancel) }.olazGlassButtonStyle()
+                         }
+                         if busy { ProgressView().controlSize(.small) }
+                     }
+@@ -188,7 +188,7 @@ struct AddFriendForm: View {
+                 HStack(spacing: 8) {
+                     Text("🇻🇳 +84").font(.system(size: 13, weight: .medium))
+                         .padding(.horizontal, 10).padding(.vertical, 7)
+-                        .glassEffect(.regular, in: Capsule())
++                        .olazGlassEffect(.regular, in: Capsule())
+                     HStack(spacing: 6) {
+                         Image(systemName: "phone.fill").foregroundStyle(.secondary)
+                         TextField("Số điện thoại", text: $phone)
+@@ -198,12 +198,12 @@ struct AddFriendForm: View {
+                             .onSubmit(find)
+                     }
+                     .padding(.horizontal, 12).padding(.vertical, 7)
+-                    .glassEffect(.regular, in: Capsule())
++                    .olazGlassEffect(.regular, in: Capsule())
+                 }
+                 Button(action: find) {
+                     if search.status == .searching { ProgressView().controlSize(.small) } else { Text("Tìm kiếm") }
+                 }
+-                .buttonStyle(.glassProminent)
++                .olazGlassProminentButtonStyle()
+                 .controlSize(.large)
+                 .frame(maxWidth: .infinity)
+                 .disabled(phone.trimmingCharacters(in: .whitespaces).isEmpty || search.status == .searching)
+@@ -265,7 +265,7 @@ private struct FoundUserCard: View {
+                         Button { engine.openContactConversation(user.id) } label: {
+                             Label("Nhắn tin", systemImage: "bubble.left.fill")
+                         }
+-                        .buttonStyle(.glassProminent)
++                        .olazGlassProminentButtonStyle()
+                         .controlSize(.large)
+                     }
+                 }
+@@ -293,7 +293,7 @@ private struct FoundUserCard: View {
+                     } label: {
+                         if sending { ProgressView().controlSize(.small) } else { Label("Gửi lời mời kết bạn", systemImage: "person.badge.plus") }
+                     }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .controlSize(.large)
+                     .disabled(sending || message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                     .frame(maxWidth: .infinity)
+diff --git a/Sources/Olaz/Views/ContactsView.swift b/Sources/Olaz/Views/ContactsView.swift
+index dc795ec..4ec017a 100644
+--- a/Sources/Olaz/Views/ContactsView.swift
++++ b/Sources/Olaz/Views/ContactsView.swift
+@@ -24,7 +24,7 @@ struct ContactsSearchField: View {
+             }
+         }
+         .padding(.horizontal, 12).padding(.vertical, 7)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+     }
+ }
+ 
+@@ -59,7 +59,7 @@ private struct ContactsToast: ViewModifier {
+                         Text(toast.text).font(.system(size: 12.5, weight: .medium)).lineLimit(2)
+                     }
+                     .padding(.horizontal, 14).padding(.vertical, 9)
+-                    .glassEffect(.regular, in: Capsule())
++                    .olazGlassEffect(.regular, in: Capsule())
+                     .padding(.bottom, 22)
+                     .transition(.move(edge: .bottom).combined(with: .opacity))
+                     .accessibilityElement(children: .combine)
+@@ -144,9 +144,9 @@ struct ContactActionButton: View {
+     @ViewBuilder private var button: some View {
+         let label = Image(systemName: symbol).font(.system(size: 17, weight: .semibold)).frame(width: 24, height: 24)
+         if prominent {
+-            Button(action: action) { label }.buttonStyle(.glassProminent)
++            Button(action: action) { label }.olazGlassProminentButtonStyle()
+         } else {
+-            Button(action: action) { label }.buttonStyle(.glass)
++            Button(action: action) { label }.olazGlassButtonStyle()
+         }
+     }
+ }
+@@ -215,7 +215,7 @@ struct FriendsList: View {
+                 } description: {
+                     Text("Tìm bạn bằng số điện thoại để gửi lời mời kết bạn.")
+                 } actions: {
+-                    Button("Thêm bạn") { shell.destination = .addFriend }.buttonStyle(.glass)
++                    Button("Thêm bạn") { shell.destination = .addFriend }.olazGlassButtonStyle()
+                 }
+                 // Fills the column so the search bar stays at the top instead of hugging a centered empty state.
+                 .fillColumn()
+@@ -238,10 +238,10 @@ struct FriendsList: View {
+                 } primaryAction: { ids in
+                     if let id = ids.first { engine.openContactConversation(id) }
+                 }
+-                .scrollEdgeEffectStyle(.soft, for: .top)
++                .olazScrollEdgeEffectStyle(.soft, for: .top)
+             }
+         }
+-        .safeAreaBar(edge: .top) {
++        .olazSafeAreaBar(edge: .top) {
+             ContactsSearchField(text: $query, prompt: "Tìm bạn")
+                 .padding(.horizontal, 12).padding(.bottom, 6)
+         }
+@@ -308,7 +308,7 @@ struct FriendCard: View {
+                 ContactCardHeader(avatar: friend.avatar, name: friend.name,
+                                   secondaryName: friend.zaloName.isEmpty ? profile?.zaloName : friend.zaloName,
+                                   status: status, online: friend.online) {
+-                    GlassEffectContainer(spacing: 20) {
++                    OlazGlassEffectContainer(spacing: 20) {
+                         HStack(spacing: 20) {
+                             ContactActionButton(title: "Nhắn tin", symbol: "bubble.left.fill", prominent: true) {
+                                 engine.openContactConversation(friend.id)
+@@ -365,7 +365,7 @@ struct GroupsList: View {
+                 } description: {
+                     Text("Tạo nhóm để cùng nhau trò chuyện và trao đổi với bạn bè đồng nghiệp")
+                 } actions: {
+-                    Button("Tạo nhóm") { shell.composeGroup() }.buttonStyle(.glass)
++                    Button("Tạo nhóm") { shell.composeGroup() }.olazGlassButtonStyle()
+                 }
+                 .fillColumn()
+             } else if groups.isEmpty {
+@@ -381,10 +381,10 @@ struct GroupsList: View {
+                 } primaryAction: { ids in
+                     if let id = ids.first { engine.openContactConversation(id) }
+                 }
+-                .scrollEdgeEffectStyle(.soft, for: .top)
++                .olazScrollEdgeEffectStyle(.soft, for: .top)
+             }
+         }
+-        .safeAreaBar(edge: .top) {
++        .olazSafeAreaBar(edge: .top) {
+             ContactsSearchField(text: $query, prompt: "Tìm nhóm")
+                 .padding(.horizontal, 12).padding(.bottom, 6)
+         }
+@@ -422,7 +422,7 @@ struct GroupCard: View {
+                     Button { engine.openContactConversation(group.id) } label: {
+                         Label("Mở trò chuyện", systemImage: "bubble.left.fill")
+                     }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .controlSize(.large)
+                 }
+             }
+diff --git a/Sources/Olaz/Views/ConversationActionViews.swift b/Sources/Olaz/Views/ConversationActionViews.swift
+index 19b9a5b..64766c8 100644
+--- a/Sources/Olaz/Views/ConversationActionViews.swift
++++ b/Sources/Olaz/Views/ConversationActionViews.swift
+@@ -197,7 +197,7 @@ private struct ConversationToastModifier: ViewModifier {
+                         Text(shown.text).font(.system(size: 12.5, weight: .medium)).lineLimit(2)
+                     }
+                     .padding(.horizontal, 14).padding(.vertical, 9)
+-                    .glassEffect(.regular, in: Capsule())
++                    .olazGlassEffect(.regular, in: Capsule())
+                     .padding(.bottom, 22)
+                     .transition(.move(edge: .bottom).combined(with: .opacity))
+                     .allowsHitTesting(false)
+@@ -247,7 +247,7 @@ struct PinBoardSheet: View {
+                         }
+                         Text(name(of: id)).font(.system(size: 13.5)).lineLimit(1)
+                         Spacer()
+-                        Button("Bỏ ghim") { removed.insert(id) }.buttonStyle(.glass).controlSize(.small)
++                        Button("Bỏ ghim") { removed.insert(id) }.olazGlassButtonStyle().controlSize(.small)
+                     }
+                 }
+                 .frame(minHeight: 200, maxHeight: 340)
+@@ -258,9 +258,9 @@ struct PinBoardSheet: View {
+             }
+             HStack {
+                 Spacer()
+-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
++                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
+                 Button("Ghim hội thoại") { confirm() }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .keyboardShortcut(.defaultAction)
+                     .disabled(board.map { !$0.freesSlot(removing: removed.count) } ?? true || busy)
+             }
+diff --git a/Sources/Olaz/Views/ConversationLabelViews.swift b/Sources/Olaz/Views/ConversationLabelViews.swift
+index cfc445e..06f66ea 100644
+--- a/Sources/Olaz/Views/ConversationLabelViews.swift
++++ b/Sources/Olaz/Views/ConversationLabelViews.swift
+@@ -95,9 +95,9 @@ struct LabelManagerView: View {
+                 Text("\(extras.labels.count)/\(extras.limits.maxLabels)").font(.system(size: 12)).foregroundStyle(.secondary)
+                 Spacer()
+                 Button("Thêm phân loại", systemImage: "plus") { editing = .new }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .disabled(extras.labels.count >= extras.limits.maxLabels)
+-                Button("Xong") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.defaultAction)
++                Button("Xong") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.defaultAction)
+             }
+             .padding(16)
+ 
+@@ -200,9 +200,9 @@ private struct LabelEditor: View {
+             if let error { Text(error).font(.system(size: 12)).foregroundStyle(.red) }
+             HStack {
+                 Spacer()
+-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
++                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
+                 Button(existing == nil ? "Thêm" : "Lưu", action: submit)
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .disabled(trimmed.isEmpty || submitting)
+                     .keyboardShortcut(.defaultAction)
+             }
+diff --git a/Sources/Olaz/Views/CreateGroupSheet.swift b/Sources/Olaz/Views/CreateGroupSheet.swift
+index 62f9c4e..e22a96f 100644
+--- a/Sources/Olaz/Views/CreateGroupSheet.swift
++++ b/Sources/Olaz/Views/CreateGroupSheet.swift
+@@ -102,7 +102,7 @@ struct CreateGroupSheet: View {
+                     .focused($focus, equals: .name)
+                     .padding(.horizontal, 12)
+                     .padding(.vertical, 9)
+-                    .glassEffect(.regular, in: Capsule())
++                    .olazGlassEffect(.regular, in: Capsule())
+                     .overlay {
+                         if !nameIsValid { Capsule().strokeBorder(Color.red.opacity(0.7), lineWidth: 1) }
+                     }
+@@ -131,7 +131,7 @@ struct CreateGroupSheet: View {
+                     .font(.system(size: 18))
+                     .foregroundStyle(.secondary)
+                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+-                    .glassEffect(.regular.interactive(), in: Circle())
++                    .olazGlassEffect(.regular.interactive(), in: Circle())
+             }
+         }
+         .frame(width: 52, height: 52)
+@@ -188,7 +188,7 @@ struct CreateGroupSheet: View {
+         }
+         .padding(.horizontal, 12)
+         .padding(.vertical, 8)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+         .padding(.horizontal, 16)
+         .padding(.bottom, 10)
+     }
+@@ -334,7 +334,7 @@ struct CreateGroupSheet: View {
+                     .monospacedDigit()
+                 Spacer()
+                 Button("Hủy") { cancel() }
+-                    .buttonStyle(.glass)
++                    .olazGlassButtonStyle()
+                     .keyboardShortcut(.cancelAction)
+                 Button { create() } label: {
+                     if creating {
+@@ -343,7 +343,7 @@ struct CreateGroupSheet: View {
+                         Text("Tạo nhóm")
+                     }
+                 }
+-                .buttonStyle(.glassProminent)
++                .olazGlassProminentButtonStyle()
+                 .keyboardShortcut(.defaultAction)
+                 .disabled(!canCreate)
+             }
+diff --git a/Sources/Olaz/Views/GroupCallPickerSheet.swift b/Sources/Olaz/Views/GroupCallPickerSheet.swift
+index 041a94e..f3b8ec5 100644
+--- a/Sources/Olaz/Views/GroupCallPickerSheet.swift
++++ b/Sources/Olaz/Views/GroupCallPickerSheet.swift
+@@ -83,7 +83,7 @@ struct GroupCallPickerSheet: View {
+         }
+         .padding(.horizontal, 12)
+         .padding(.vertical, 8)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+         .padding(.horizontal, 16)
+         .padding(.bottom, 8)
+     }
+@@ -139,10 +139,10 @@ struct GroupCallPickerSheet: View {
+                     .monospacedDigit()
+                 Spacer()
+                 Button("Hủy") { engine.cancelGroupPicker(picker) }
+-                    .buttonStyle(.glass)
++                    .olazGlassButtonStyle()
+                     .keyboardShortcut(.cancelAction)
+                 Button(picker.confirmTitle) { engine.confirmGroupPicker(picker, selected: selection) }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .keyboardShortcut(.defaultAction)
+                     .disabled(selection.isEmpty)
+             }
+diff --git a/Sources/Olaz/Views/HiddenChatViews.swift b/Sources/Olaz/Views/HiddenChatViews.swift
+index 326c2c4..1d0e15d 100644
+--- a/Sources/Olaz/Views/HiddenChatViews.swift
++++ b/Sources/Olaz/Views/HiddenChatViews.swift
+@@ -252,28 +252,28 @@ struct HiddenChatSheet: View {
+         switch flow.screen {
+         case .introduce:
+             HStack {
+-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
+-                Button("Đặt mã PIN") { flow.startSettingPIN() }.buttonStyle(.glassProminent).keyboardShortcut(.defaultAction)
++                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
++                Button("Đặt mã PIN") { flow.startSettingPIN() }.olazGlassProminentButtonStyle().keyboardShortcut(.defaultAction)
+             }
+         case .unhideConfirm:
+             HStack {
+-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
+-                Button("Bỏ ẩn trò chuyện") { run(.unhide(pin: nil)) }.buttonStyle(.glassProminent).keyboardShortcut(.defaultAction)
++                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
++                Button("Bỏ ẩn trò chuyện") { run(.unhide(pin: nil)) }.olazGlassProminentButtonStyle().keyboardShortcut(.defaultAction)
+             }
+         case .resetConfirm:
+             HStack {
+-                Button("Đóng") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
+-                Button("Đặt lại mã PIN", role: .destructive) { resetPIN() }.buttonStyle(.glassProminent).tint(.red)
++                Button("Đóng") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
++                Button("Đặt lại mã PIN", role: .destructive) { resetPIN() }.olazGlassProminentButtonStyle().tint(.red)
+             }
+         case .hideSuccess, .setPINSuccess, .changeSuccess:
+-            Button("Đóng") { dismiss() }.buttonStyle(.glassProminent).keyboardShortcut(.defaultAction)
++            Button("Đóng") { dismiss() }.olazGlassProminentButtonStyle().keyboardShortcut(.defaultAction)
+         case .repeatPIN, .confirmPIN:
+             HStack {
+-                Button("Quay lại") { flow.back(); resetToken += 1 }.buttonStyle(.glass)
+-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
++                Button("Quay lại") { flow.back(); resetToken += 1 }.olazGlassButtonStyle()
++                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
+             }
+         default:
+-            Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
++            Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
+         }
+     }
+ 
+diff --git a/Sources/Olaz/Views/LoginView.swift b/Sources/Olaz/Views/LoginView.swift
+index f076d8c..da76799 100644
+--- a/Sources/Olaz/Views/LoginView.swift
++++ b/Sources/Olaz/Views/LoginView.swift
+@@ -118,7 +118,7 @@ struct LoginView: View {
+                     } label: {
+                         Label("Lấy mã mới", systemImage: "arrow.clockwise")
+                     }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .controlSize(.large)
+                 }
+             }
+@@ -145,7 +145,7 @@ struct LoginView: View {
+             }
+         case .failed:
+             Button("Thử lại") { engine.refreshQR() }
+-                .buttonStyle(.glassProminent)
++                .olazGlassProminentButtonStyle()
+                 .controlSize(.large)
+         default:
+             VStack(alignment: .leading, spacing: 7) {
+diff --git a/Sources/Olaz/Views/MainShellView.swift b/Sources/Olaz/Views/MainShellView.swift
+index d3fd8d7..413d8ba 100644
+--- a/Sources/Olaz/Views/MainShellView.swift
++++ b/Sources/Olaz/Views/MainShellView.swift
+@@ -237,7 +237,7 @@ struct ConversationDetail: View {
+                 Text("Nhập mã PIN để mở trò chuyện")
+             } actions: {
+                 Button("Nhập mã PIN") { engine.conversationPrompt = .unlock(id: conversation.id) }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+             }
+         } else if let conversation {
+             ChatView(conversation: conversation)
+diff --git a/Sources/Olaz/Views/MediaFailureView.swift b/Sources/Olaz/Views/MediaFailureView.swift
+index a0a012c..d82d59a 100644
+--- a/Sources/Olaz/Views/MediaFailureView.swift
++++ b/Sources/Olaz/Views/MediaFailureView.swift
+@@ -47,7 +47,7 @@ struct MediaFailureView: View {
+                     Button(action: retry) {
+                         Label("Thử lại", systemImage: "arrow.clockwise").font(.system(size: 12, weight: .medium))
+                     }
+-                    .buttonStyle(.glass)
++                    .olazGlassButtonStyle()
+                     .controlSize(.small)
+                 }
+             }
+diff --git a/Sources/Olaz/Views/MediaViewer.swift b/Sources/Olaz/Views/MediaViewer.swift
+index 60ab202..c91de2b 100644
+--- a/Sources/Olaz/Views/MediaViewer.swift
++++ b/Sources/Olaz/Views/MediaViewer.swift
+@@ -402,7 +402,7 @@ private struct MediaViewerContent: View {
+         }
+         .padding(.horizontal, 16)
+         .padding(.vertical, 6)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+         .accessibilityElement(children: .combine)
+     }
+ 
+diff --git a/Sources/Olaz/Views/MessageActionViews.swift b/Sources/Olaz/Views/MessageActionViews.swift
+index 18b2556..418f29a 100644
+--- a/Sources/Olaz/Views/MessageActionViews.swift
++++ b/Sources/Olaz/Views/MessageActionViews.swift
+@@ -174,7 +174,7 @@ struct PinnedBar: View {
+                         Text("+\(list.items.count - 1) ghim").font(.system(size: 11.5, weight: .medium))
+                     }
+                     .menuStyle(.button)
+-                    .buttonStyle(.glass)
++                    .olazGlassButtonStyle()
+                     .controlSize(.small)
+                     .fixedSize()
+                     .help("Danh sách ghim (\(list.items.count))")
+@@ -187,7 +187,7 @@ struct PinnedBar: View {
+                 }
+             }
+             .padding(.horizontal, 12).padding(.vertical, 7)
+-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
++            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+             .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 2)
+             .accessibilityElement(children: .contain)
+             .accessibilityLabel("Tin nhắn đã ghim")
+@@ -218,7 +218,7 @@ private struct DeleteUndoBar: View {
+                 Image(systemName: "trash").font(.system(size: 12)).foregroundStyle(.secondary)
+                 Text("\(undo.count) tin nhắn đã xóa").font(.system(size: 12.5, weight: .medium))
+                 Button("Khôi phục (\(left))") { engine.undoDelete() }
+-                    .buttonStyle(.glass)
++                    .olazGlassButtonStyle()
+                     .controlSize(.small)
+                 Button("Đóng", systemImage: "xmark") { engine.dismissDeleteUndo() }
+                     .labelStyle(.iconOnly)
+@@ -227,7 +227,7 @@ private struct DeleteUndoBar: View {
+                     .help("Xóa ngay")
+             }
+             .padding(.leading, 14).padding(.trailing, 10).padding(.vertical, 6)
+-            .glassEffect(.regular, in: Capsule())
++            .olazGlassEffect(.regular, in: Capsule())
+         }
+     }
+ }
+diff --git a/Sources/Olaz/Views/MessageBubble.swift b/Sources/Olaz/Views/MessageBubble.swift
+index ec1f77b..f919173 100644
+--- a/Sources/Olaz/Views/MessageBubble.swift
++++ b/Sources/Olaz/Views/MessageBubble.swift
+@@ -265,7 +265,7 @@ struct MessageRow: View {
+             }
+         }
+         .padding(.horizontal, 3).padding(.vertical, 3)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+     }
+ 
+     private func barButton(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
+@@ -651,7 +651,7 @@ private struct ReactionChips: View {
+     @State private var showsDetail = false
+ 
+     var body: some View {
+-        GlassEffectContainer(spacing: 3) {
++        OlazGlassEffectContainer(spacing: 3) {
+             HStack(spacing: 3) {
+                 ForEach(reactions) { r in
+                     Button { showsDetail = true } label: {
+@@ -662,7 +662,7 @@ private struct ReactionChips: View {
+                             }
+                         }
+                         .padding(.horizontal, 7).padding(.vertical, 3)
+-                        .glassEffect(r.includesMe ? Glass.regular.tint(ChatPalette.accent(accentStored).opacity(0.4)) : Glass.regular, in: Capsule())
++                        .olazGlassEffect(r.includesMe ? OlazGlass.regular.tint(ChatPalette.accent(accentStored).opacity(0.4)) : OlazGlass.regular, in: Capsule())
+                         .contentShape(Capsule())
+                     }
+                     .buttonStyle(.plain)
+@@ -895,7 +895,8 @@ private final class VoicePlayer: ObservableObject {
+     enum State { case idle, loading, playing, paused }
+     @Published var state: State = .idle
+     private var player: AVPlayer?
+-    private var endObserver: NSObjectProtocol?
++    // nonisolated(unsafe): read by the nonisolated deinit (isolated deinit needs macOS 26).
++    nonisolated(unsafe) private var endObserver: NSObjectProtocol?
+     private var loadTask: Task<Void, Never>?
+ 
+     func toggle(_ url: URL) {
+@@ -955,7 +956,7 @@ private final class VoicePlayer: ObservableObject {
+         player = nil
+     }
+ 
+-    isolated deinit { removeObserver() }
++    deinit { if let endObserver { NotificationCenter.default.removeObserver(endObserver) } }
+ }
+ 
+ private struct VoiceView: View {
+diff --git a/Sources/Olaz/Views/PollViews.swift b/Sources/Olaz/Views/PollViews.swift
+index 17ce826..76bf9e9 100644
+--- a/Sources/Olaz/Views/PollViews.swift
++++ b/Sources/Olaz/Views/PollViews.swift
+@@ -251,7 +251,7 @@ private struct PollDetailCard: View {
+             Button { open(.vote) } label: {
+                 Text(buttonTitle(detail)).font(.system(size: 13, weight: .semibold)).frame(maxWidth: .infinity)
+             }
+-            .buttonStyle(.glass)
++            .olazGlassButtonStyle()
+             .controlSize(.regular)
+         }
+         .padding(12)
+@@ -404,7 +404,7 @@ struct PollDetailSheet: View {
+                     Button { requestSubmit() } label: {
+                         if busy { ProgressView().controlSize(.small) } else { Text("Xác nhận") }
+                     }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     .disabled(!canConfirm || busy)
+                 }
+             }
+@@ -467,7 +467,7 @@ struct PollDetailSheet: View {
+                     next.addRow()
+                     self.draft = next
+                 }
+-                .buttonStyle(.glass).controlSize(.regular)
++                .olazGlassButtonStyle().controlSize(.regular)
+                 .disabled(draft.hasDuplicates(in: detail))
+             }
+             if detail.closed {
+@@ -706,7 +706,7 @@ struct PollCreateSheet: View {
+                     }
+                 }
+                 Button("Thêm lựa chọn", systemImage: "plus") { draft.options.append("") }
+-                    .buttonStyle(.glass)
++                    .olazGlassButtonStyle()
+                     .disabled(draft.options.count >= config.maxOptions || draft.options.indices.contains { draft.isDuplicate(at: $0) })
+             }
+             DisclosureGroup(isExpanded: $showSettings) { settings.padding(.top, 8) } label: {
+@@ -768,7 +768,7 @@ struct PollCreateSheet: View {
+                 Button { Task { await create() } } label: {
+                     if busy { ProgressView().controlSize(.small) } else { Text("Tạo bình chọn") }
+                 }
+-                .buttonStyle(.glassProminent)
++                .olazGlassProminentButtonStyle()
+                 .disabled(issue != nil || !caps.canCreate || busy)
+             }
+         }
+diff --git a/Sources/Olaz/Views/StickerPicker.swift b/Sources/Olaz/Views/StickerPicker.swift
+index ebeb7f0..8ffdc23 100644
+--- a/Sources/Olaz/Views/StickerPicker.swift
++++ b/Sources/Olaz/Views/StickerPicker.swift
+@@ -321,7 +321,7 @@ struct TypingStickerStrip: View {
+                 .help("Bấm phím Esc để ẩn")
+         }
+         .frame(height: 70)
+-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
++        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+         .accessibilityElement(children: .contain)
+         .accessibilityLabel("Gợi ý Sticker")
+     }
+diff --git a/Sources/Olaz/Views/TransferView.swift b/Sources/Olaz/Views/TransferView.swift
+index cc6f7fa..801c571 100644
+--- a/Sources/Olaz/Views/TransferView.swift
++++ b/Sources/Olaz/Views/TransferView.swift
+@@ -46,7 +46,7 @@ private struct TransferCard: View {
+     }
+ 
+     var body: some View {
+-        GlassEffectContainer {
++        OlazGlassEffectContainer {
+             VStack(spacing: 18) {
+                 Group {
+                     switch state.phase {
+@@ -62,7 +62,7 @@ private struct TransferCard: View {
+             }
+             .padding(30)
+             .frame(width: 420)
+-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
++            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+         }
+         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
+         .animation(.smooth(duration: 0.35), value: kind)
+@@ -110,13 +110,13 @@ private struct TransferCard: View {
+                 Button { engine.respondToTransfer(accept: true) } label: {
+                     Text("Đồng bộ ngay").frame(maxWidth: .infinity).padding(.vertical, 6)
+                 }
+-                .buttonStyle(.glassProminent)
++                .olazGlassProminentButtonStyle()
+                 .controlSize(.large)
+ 
+                 Button { engine.respondToTransfer(accept: false) } label: {
+                     Text("Để sau").frame(maxWidth: .infinity).padding(.vertical, 6)
+                 }
+-                .buttonStyle(.glass)
++                .olazGlassButtonStyle()
+                 .controlSize(.large)
+             }
+             .padding(.top, 4)
+@@ -192,11 +192,11 @@ private struct TransferCard: View {
+             Button { engine.dismissTransfer() } label: {
+                 Text("Ẩn").frame(maxWidth: .infinity).padding(.vertical, 4)
+             }
+-            .buttonStyle(.glass)
++            .olazGlassButtonStyle()
+             Button(role: .destructive) { engine.respondToTransfer(accept: false) } label: {
+                 Text("Hủy đồng bộ").frame(maxWidth: .infinity).padding(.vertical, 4)
+             }
+-            .buttonStyle(.glass)
++            .olazGlassButtonStyle()
+         }
+         .controlSize(.large)
+         .padding(.top, 4)
+@@ -222,7 +222,7 @@ private struct TransferCard: View {
+             Button { engine.dismissTransfer() } label: {
+                 Text("Xong").frame(maxWidth: .infinity).padding(.vertical, 6)
+             }
+-            .buttonStyle(.glassProminent)
++            .olazGlassProminentButtonStyle()
+             .controlSize(.large)
+             .keyboardShortcut(.defaultAction)
+             .padding(.top, 4)
+@@ -250,13 +250,13 @@ private struct TransferCard: View {
+                     Button { engine.respondToTransfer(accept: true) } label: {
+                         Text("Thử lại").frame(maxWidth: .infinity).padding(.vertical, 6)
+                     }
+-                    .buttonStyle(.glassProminent)
++                    .olazGlassProminentButtonStyle()
+                     // No Return default: a retry pings the phone, so it takes a deliberate click.
+                 }
+                 Button { engine.dismissTransfer() } label: {
+                     Text("Đóng").frame(maxWidth: .infinity).padding(.vertical, 6)
+                 }
+-                .buttonStyle(.glass)
++                .olazGlassButtonStyle()
+             }
+             .controlSize(.large)
+             .padding(.top, 4)
+diff --git a/Sources/Olaz/Views/VideoPlayerView.swift b/Sources/Olaz/Views/VideoPlayerView.swift
+index a4cc9a9..45b521a 100644
+--- a/Sources/Olaz/Views/VideoPlayerView.swift
++++ b/Sources/Olaz/Views/VideoPlayerView.swift
+@@ -484,7 +484,7 @@ struct VideoPlayerView: View {
+     // MARK: Control bar
+ 
+     private var controlBar: some View {
+-        GlassEffectContainer(spacing: 10) {
++        OlazGlassEffectContainer(spacing: 10) {
+             HStack(spacing: 10) {
+                 ViewerIconButton(symbol: playSymbol, label: playLabel, help: playLabel + (playback.ended ? "" : " (Dấu cách)")) { playback.togglePlay() }
+                 scrubber
+@@ -537,7 +537,7 @@ struct VideoPlayerView: View {
+         }
+         .padding(.horizontal, 14)
+         .frame(height: 34)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+     }
+ 
+     private var volumeControl: some View {
+@@ -561,6 +561,6 @@ struct VideoPlayerView: View {
+         }
+         .padding(.horizontal, 12)
+         .frame(height: 34)
+-        .glassEffect(.regular, in: Capsule())
++        .olazGlassEffect(.regular, in: Capsule())
+     }
+ }
+diff --git a/Sources/Olaz/Views/ZoomableImageView.swift b/Sources/Olaz/Views/ZoomableImageView.swift
+index 125a1ae..c44db57 100644
+--- a/Sources/Olaz/Views/ZoomableImageView.swift
++++ b/Sources/Olaz/Views/ZoomableImageView.swift
+@@ -369,7 +369,7 @@ struct ViewerIconButton: View {
+                 .frame(width: 20, height: 20)
+                 .contentTransition(.symbolEffect(.replace))
+         }
+-        .buttonStyle(.glass)
++        .olazGlassButtonStyle()
+         .buttonBorderShape(.circle)
+         .help(help ?? label)
+         .accessibilityLabel(label)
+@@ -382,7 +382,7 @@ struct ZoomControls: View {
+     var showsShortcuts = true
+ 
+     var body: some View {
+-        GlassEffectContainer(spacing: 8) {
++        OlazGlassEffectContainer(spacing: 8) {
+             HStack(spacing: 8) {
+                 ViewerIconButton(symbol: "minus.magnifyingglass", label: "Thu nhỏ", help: help("Thu nhỏ", "⌘−")) { zoom.zoomOut() }
+                 Button { zoom.fit() } label: {
+@@ -390,7 +390,7 @@ struct ZoomControls: View {
+                         .font(.system(size: 12, weight: .medium).monospacedDigit())
+                         .frame(minWidth: 38)
+                 }
+-                .buttonStyle(.glass)
++                .olazGlassButtonStyle()
+                 .help(help("Vừa khung", "⌘9"))
+                 .accessibilityLabel("Mức thu phóng")
+                 .accessibilityValue("\(zoom.percent) phần trăm")
+diff --git a/scripts/make-app.sh b/scripts/make-app.sh
+index 217b061..8372538 100755
+--- a/scripts/make-app.sh
++++ b/scripts/make-app.sh
+@@ -50,7 +50,7 @@ cat > "$APP/Contents/Info.plist" << PLIST
+     <key>CFBundleShortVersionString</key><string>${VERSION}</string>
+     <key>CFBundlePackageType</key><string>APPL</string>
+     <key>CFBundleIconFile</key><string>AppIcon</string>
+-    <key>LSMinimumSystemVersion</key><string>26.0</string>
++    <key>LSMinimumSystemVersion</key><string>15.0</string>
+     <key>LSApplicationCategoryType</key><string>public.app-category.social-networking</string>
+     <key>NSHighResolutionCapable</key><true/>
+     <key>NSSupportsAutomaticGraphicsSwitching</key><true/>

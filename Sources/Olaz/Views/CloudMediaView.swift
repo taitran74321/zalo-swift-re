@@ -160,7 +160,7 @@ struct CloudMediaView: View {
 
     var body: some View {
         content
-            .safeAreaBar(edge: .top) { kindFilter }
+            .olazSafeAreaBar(edge: .top) { kindFilter }
             .safeAreaInset(edge: .bottom) { selectionBar }
             .overlay(alignment: .bottom) { noticeView }
             .navigationTitle(title)
@@ -267,7 +267,7 @@ struct CloudMediaView: View {
                 .padding(.horizontal, 16).padding(.vertical, 8)
                 loadingFooter
             }
-            .scrollEdgeEffectStyle(.soft, for: .top)
+            .olazScrollEdgeEffectStyle(.soft, for: .top)
         } else {
             List {
                 ForEach(model.items) { item in
@@ -320,13 +320,13 @@ struct CloudMediaView: View {
                 Text(chosen.isEmpty ? "Chọn các mục để xoá" : "Đã chọn \(chosen.count) • \(CloudFormat.size(chosen.reduce(0) { $0 + $1.size }))")
                     .font(.system(size: 13, weight: .medium))
                 Spacer()
-                Button("Chọn tất cả") { model.selection = Set(model.items.map(\.id)) }.buttonStyle(.glass)
+                Button("Chọn tất cả") { model.selection = Set(model.items.map(\.id)) }.olazGlassButtonStyle()
                 Button("Xoá…", role: .destructive) { deleteTargets = chosen }
-                    .buttonStyle(.glassProminent).tint(.red)
+                    .olazGlassProminentButtonStyle().tint(.red)
                     .disabled(chosen.isEmpty || deleting)
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             .padding(.horizontal, 20).padding(.bottom, 12)
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
@@ -336,7 +336,7 @@ struct CloudMediaView: View {
         if let notice {
             Text(notice).font(.system(size: 12.5, weight: .medium))
                 .padding(.horizontal, 14).padding(.vertical, 9)
-                .glassEffect(.regular, in: Capsule())
+                .olazGlassEffect(.regular, in: Capsule())
                 .padding(.bottom, 70)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
         }

@@ -139,7 +139,7 @@ struct RuntimeSetupView: View {
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                         Button("Thử lại") { engine.retryRuntimeSetup() }
-                            .buttonStyle(.glassProminent)
+                            .olazGlassProminentButtonStyle()
                             .keyboardShortcut(.defaultAction)
                     }
                 } else {

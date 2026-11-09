@@ -174,7 +174,7 @@ struct PinnedBar: View {
                         Text("+\(list.items.count - 1) ghim").font(.system(size: 11.5, weight: .medium))
                     }
                     .menuStyle(.button)
-                    .buttonStyle(.glass)
+                    .olazGlassButtonStyle()
                     .controlSize(.small)
                     .fixedSize()
                     .help("Danh sách ghim (\(list.items.count))")
@@ -187,7 +187,7 @@ struct PinnedBar: View {
                 }
             }
             .padding(.horizontal, 12).padding(.vertical, 7)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 2)
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Tin nhắn đã ghim")
@@ -218,7 +218,7 @@ private struct DeleteUndoBar: View {
                 Image(systemName: "trash").font(.system(size: 12)).foregroundStyle(.secondary)
                 Text("\(undo.count) tin nhắn đã xóa").font(.system(size: 12.5, weight: .medium))
                 Button("Khôi phục (\(left))") { engine.undoDelete() }
-                    .buttonStyle(.glass)
+                    .olazGlassButtonStyle()
                     .controlSize(.small)
                 Button("Đóng", systemImage: "xmark") { engine.dismissDeleteUndo() }
                     .labelStyle(.iconOnly)
@@ -227,7 +227,7 @@ private struct DeleteUndoBar: View {
                     .help("Xóa ngay")
             }
             .padding(.leading, 14).padding(.trailing, 10).padding(.vertical, 6)
-            .glassEffect(.regular, in: Capsule())
+            .olazGlassEffect(.regular, in: Capsule())
         }
     }
 }

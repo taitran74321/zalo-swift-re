@@ -104,6 +104,7 @@ final class OfficialClientHost: NSObject {
         guard let url = ResourceLocator.url(for: "\(name).js", in: "HostScripts"),
               let source = try? String(contentsOf: url, encoding: .utf8) else {
             hostLog.fault("missing host script \(name, privacy: .public)")
+            EngineLog.shared.write("missing host script \(name).js — resource bundle not found (see ResourceLocator)")
             return ""
         }
         #if DEBUG

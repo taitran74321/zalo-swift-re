@@ -252,28 +252,28 @@ struct HiddenChatSheet: View {
         switch flow.screen {
         case .introduce:
             HStack {
-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
-                Button("Đặt mã PIN") { flow.startSettingPIN() }.buttonStyle(.glassProminent).keyboardShortcut(.defaultAction)
+                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
+                Button("Đặt mã PIN") { flow.startSettingPIN() }.olazGlassProminentButtonStyle().keyboardShortcut(.defaultAction)
             }
         case .unhideConfirm:
             HStack {
-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
-                Button("Bỏ ẩn trò chuyện") { run(.unhide(pin: nil)) }.buttonStyle(.glassProminent).keyboardShortcut(.defaultAction)
+                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
+                Button("Bỏ ẩn trò chuyện") { run(.unhide(pin: nil)) }.olazGlassProminentButtonStyle().keyboardShortcut(.defaultAction)
             }
         case .resetConfirm:
             HStack {
-                Button("Đóng") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
-                Button("Đặt lại mã PIN", role: .destructive) { resetPIN() }.buttonStyle(.glassProminent).tint(.red)
+                Button("Đóng") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
+                Button("Đặt lại mã PIN", role: .destructive) { resetPIN() }.olazGlassProminentButtonStyle().tint(.red)
             }
         case .hideSuccess, .setPINSuccess, .changeSuccess:
-            Button("Đóng") { dismiss() }.buttonStyle(.glassProminent).keyboardShortcut(.defaultAction)
+            Button("Đóng") { dismiss() }.olazGlassProminentButtonStyle().keyboardShortcut(.defaultAction)
         case .repeatPIN, .confirmPIN:
             HStack {
-                Button("Quay lại") { flow.back(); resetToken += 1 }.buttonStyle(.glass)
-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
+                Button("Quay lại") { flow.back(); resetToken += 1 }.olazGlassButtonStyle()
+                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
             }
         default:
-            Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
+            Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
         }
     }
 

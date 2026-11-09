@@ -156,10 +156,10 @@ private struct CoachMarkCard: View {
                 Spacer()
                 if step.previous != nil {
                     Button("Quay lại") { shell.retreatTour() }
-                        .buttonStyle(.glass)
+                        .olazGlassButtonStyle()
                 }
                 Button(step.next == nil ? "Xong" : "Tiếp") { shell.advanceTour() }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .keyboardShortcut(.defaultAction)
             }
             .controlSize(.regular)

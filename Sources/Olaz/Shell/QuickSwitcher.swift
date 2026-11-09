@@ -131,7 +131,7 @@ private struct QuickSwitcherPanel: View {
                 footer
             }
             .frame(width: 560)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             .shadow(color: .black.opacity(0.22), radius: 30, y: 12)
             // Clicks on the panel's own padding must not fall through to the dim layer and close it.
             .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
@@ -207,7 +207,7 @@ private struct QuickSwitcherPanel: View {
                     .padding(6)
                 }
                 .frame(maxHeight: 360)
-                .scrollEdgeEffectStyle(.soft, for: .vertical)
+                .olazScrollEdgeEffectStyle(.soft, for: .vertical)
                 .onChange(of: scrollRequest) { _, request in
                     if let request { proxy.scrollTo(request.id) }
                 }

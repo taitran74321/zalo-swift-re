@@ -102,7 +102,7 @@ struct CreateGroupSheet: View {
                     .focused($focus, equals: .name)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 9)
-                    .glassEffect(.regular, in: Capsule())
+                    .olazGlassEffect(.regular, in: Capsule())
                     .overlay {
                         if !nameIsValid { Capsule().strokeBorder(Color.red.opacity(0.7), lineWidth: 1) }
                     }
@@ -131,7 +131,7 @@ struct CreateGroupSheet: View {
                     .font(.system(size: 18))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .glassEffect(.regular.interactive(), in: Circle())
+                    .olazGlassEffect(.regular.interactive(), in: Circle())
             }
         }
         .frame(width: 52, height: 52)
@@ -188,7 +188,7 @@ struct CreateGroupSheet: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
     }
@@ -334,7 +334,7 @@ struct CreateGroupSheet: View {
                     .monospacedDigit()
                 Spacer()
                 Button("Hủy") { cancel() }
-                    .buttonStyle(.glass)
+                    .olazGlassButtonStyle()
                     .keyboardShortcut(.cancelAction)
                 Button { create() } label: {
                     if creating {
@@ -343,7 +343,7 @@ struct CreateGroupSheet: View {
                         Text("Tạo nhóm")
                     }
                 }
-                .buttonStyle(.glassProminent)
+                .olazGlassProminentButtonStyle()
                 .keyboardShortcut(.defaultAction)
                 .disabled(!canCreate)
             }

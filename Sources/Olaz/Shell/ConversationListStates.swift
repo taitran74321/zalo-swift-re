@@ -31,7 +31,7 @@ struct ConversationListBanner: View {
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let actionTitle, let action {
-                Button(actionTitle, action: action).buttonStyle(.glass).controlSize(.small)
+                Button(actionTitle, action: action).olazGlassButtonStyle().controlSize(.small)
             }
         }
         .padding(.horizontal, 11).padding(.vertical, 9)

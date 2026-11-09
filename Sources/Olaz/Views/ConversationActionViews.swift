@@ -197,7 +197,7 @@ private struct ConversationToastModifier: ViewModifier {
                         Text(shown.text).font(.system(size: 12.5, weight: .medium)).lineLimit(2)
                     }
                     .padding(.horizontal, 14).padding(.vertical, 9)
-                    .glassEffect(.regular, in: Capsule())
+                    .olazGlassEffect(.regular, in: Capsule())
                     .padding(.bottom, 22)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .allowsHitTesting(false)
@@ -247,7 +247,7 @@ struct PinBoardSheet: View {
                         }
                         Text(name(of: id)).font(.system(size: 13.5)).lineLimit(1)
                         Spacer()
-                        Button("Bỏ ghim") { removed.insert(id) }.buttonStyle(.glass).controlSize(.small)
+                        Button("Bỏ ghim") { removed.insert(id) }.olazGlassButtonStyle().controlSize(.small)
                     }
                 }
                 .frame(minHeight: 200, maxHeight: 340)
@@ -258,9 +258,9 @@ struct PinBoardSheet: View {
             }
             HStack {
                 Spacer()
-                Button("Hủy") { dismiss() }.buttonStyle(.glass).keyboardShortcut(.cancelAction)
+                Button("Hủy") { dismiss() }.olazGlassButtonStyle().keyboardShortcut(.cancelAction)
                 Button("Ghim hội thoại") { confirm() }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .keyboardShortcut(.defaultAction)
                     .disabled(board.map { !$0.freesSlot(removing: removed.count) } ?? true || busy)
             }

@@ -37,7 +37,7 @@ struct ChatView: View {
                     } actions: {
                         if engine.canStartTransfer {
                             Button("Đồng bộ tin nhắn", systemImage: "iphone.and.arrow.forward") { engine.startTransfer() }
-                                .buttonStyle(.glassProminent)
+                                .olazGlassProminentButtonStyle()
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -55,10 +55,10 @@ struct ChatView: View {
             }
         }
         .background { ChatWallpaperBackground() }
-        .safeAreaBar(edge: .top, spacing: 0) {
+        .olazSafeAreaBar(edge: .top, spacing: 0) {
             PinnedBar(conversationId: id, open: openPin)
         }
-        .safeAreaBar(edge: .bottom, spacing: 0) {
+        .olazSafeAreaBar(edge: .bottom, spacing: 0) {
             ChatComposer(
                 name: conversation.displayName,
                 conversationId: id,
@@ -79,31 +79,24 @@ struct ChatView: View {
         } message: {
             Text(notice == .like ? "Không gửi được biểu tượng 👍. Hãy thử lại." : "Nội dung đã được trả lại vào ô soạn thảo. Hãy thử gửi lại.")
         }
-        .toolbar {
-            // macOS 27 lays the detail column's toolbar items out from its leading edge, so the header (avatar, name, subtitle)
-            // is the first item, like Mail's, and the flexible spacer keeps the buttons at the trailing edge. A toolbar item has a
-            // fixed ideal width, so the header is capped at what the column leaves beside the buttons, or a long name would push
-            // them into the overflow menu; the name truncates instead.
-            ToolbarItem(placement: .primaryAction) {
-                header(subtitle: subtitle(last: loaded?.last))
-                    .frame(maxWidth: max(0, columnWidth - Self.toolbarButtonsRoom), alignment: .leading)
+        // macOS 27 lays the detail column's toolbar items out from its leading edge, so the header (avatar, name, subtitle)
+        // is the first item, like Mail's, and the flexible spacer keeps the buttons at the trailing edge. A toolbar item has a
+        // fixed ideal width, so the header is capped at what the column leaves beside the buttons, or a long name would push
+        // them into the overflow menu; the name truncates instead. (Spacers only on macOS 26+, see Compat26.swift.)
+        .olazChatToolbar {
+            header(subtitle: subtitle(last: loaded?.last))
+                .frame(maxWidth: max(0, columnWidth - Self.toolbarButtonsRoom), alignment: .leading)
+        } calls: {
+            ChatCallButtons(conversation: conversation)
+        } info: {
+            Button {
+                shell.toggleInspector()
+            } label: {
+                Label("Thông tin", systemImage: "sidebar.right")
             }
-            .sharedBackgroundVisibility(.hidden)
-            ToolbarSpacer(.flexible, placement: .primaryAction)
-            ToolbarItemGroup(placement: .primaryAction) {
-                ChatCallButtons(conversation: conversation)
-            }
-            ToolbarSpacer(.fixed, placement: .primaryAction)
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button {
-                    shell.toggleInspector()
-                } label: {
-                    Label("Thông tin", systemImage: "sidebar.right")
-                }
-                .help("Thông tin (⌥⌘I)")
-                .tourAnchor(.toolbar, arrowEdge: .bottom)
-                ConversationHeaderMenu(conversationId: id)
-            }
+            .help("Thông tin (⌥⌘I)")
+            .tourAnchor(.toolbar, arrowEdge: .bottom)
+            ConversationHeaderMenu(conversationId: id)
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { columnWidth = $0 }
         .cardActionPresenter()
@@ -352,8 +345,8 @@ private struct MessageList: View {
             // Only the initial offset is anchored; later size changes must not yank the view.
             .defaultScrollAnchor(.bottom, for: .initialOffset)
             .scrollPosition(id: $topId, anchor: .top)
-            .scrollEdgeEffectStyle(.hard, for: .top)
-            .scrollEdgeEffectStyle(.soft, for: .bottom)
+            .olazScrollEdgeEffectStyle(.hard, for: .top)
+            .olazScrollEdgeEffectStyle(.soft, for: .bottom)
             .onScrollGeometryChange(for: Metrics.self) { geo in
                 Metrics(top: geo.contentOffset.y + geo.contentInsets.top,
                         fromBottom: geo.contentSize.height - geo.visibleRect.maxY,
@@ -422,7 +415,7 @@ private struct MessageList: View {
                     } label: {
                         Image(systemName: "chevron.down").font(.system(size: 13, weight: .bold))
                     }
-                    .buttonStyle(.glass)
+                    .olazGlassButtonStyle()
                     .buttonBorderShape(.circle)
                     .padding(14)
                     .transition(.scale.combined(with: .opacity))
@@ -465,7 +458,7 @@ private struct DaySeparator: View {
         .font(.system(size: 11))
         .foregroundStyle(.secondary)
         .padding(.horizontal, 11).padding(.vertical, 4)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
         .frame(maxWidth: .infinity)
         .padding(.top, 14).padding(.bottom, 6)
         .accessibilityElement(children: .combine)

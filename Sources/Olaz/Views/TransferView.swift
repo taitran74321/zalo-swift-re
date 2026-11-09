@@ -46,7 +46,7 @@ private struct TransferCard: View {
     }
 
     var body: some View {
-        GlassEffectContainer {
+        OlazGlassEffectContainer {
             VStack(spacing: 18) {
                 Group {
                     switch state.phase {
@@ -62,7 +62,7 @@ private struct TransferCard: View {
             }
             .padding(30)
             .frame(width: 420)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
         }
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         .animation(.smooth(duration: 0.35), value: kind)
@@ -110,13 +110,13 @@ private struct TransferCard: View {
                 Button { engine.respondToTransfer(accept: true) } label: {
                     Text("Đồng bộ ngay").frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
-                .buttonStyle(.glassProminent)
+                .olazGlassProminentButtonStyle()
                 .controlSize(.large)
 
                 Button { engine.respondToTransfer(accept: false) } label: {
                     Text("Để sau").frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
-                .buttonStyle(.glass)
+                .olazGlassButtonStyle()
                 .controlSize(.large)
             }
             .padding(.top, 4)
@@ -192,11 +192,11 @@ private struct TransferCard: View {
             Button { engine.dismissTransfer() } label: {
                 Text("Ẩn").frame(maxWidth: .infinity).padding(.vertical, 4)
             }
-            .buttonStyle(.glass)
+            .olazGlassButtonStyle()
             Button(role: .destructive) { engine.respondToTransfer(accept: false) } label: {
                 Text("Hủy đồng bộ").frame(maxWidth: .infinity).padding(.vertical, 4)
             }
-            .buttonStyle(.glass)
+            .olazGlassButtonStyle()
         }
         .controlSize(.large)
         .padding(.top, 4)
@@ -222,7 +222,7 @@ private struct TransferCard: View {
             Button { engine.dismissTransfer() } label: {
                 Text("Xong").frame(maxWidth: .infinity).padding(.vertical, 6)
             }
-            .buttonStyle(.glassProminent)
+            .olazGlassProminentButtonStyle()
             .controlSize(.large)
             .keyboardShortcut(.defaultAction)
             .padding(.top, 4)
@@ -250,13 +250,13 @@ private struct TransferCard: View {
                     Button { engine.respondToTransfer(accept: true) } label: {
                         Text("Thử lại").frame(maxWidth: .infinity).padding(.vertical, 6)
                     }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     // No Return default: a retry pings the phone, so it takes a deliberate click.
                 }
                 Button { engine.dismissTransfer() } label: {
                     Text("Đóng").frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
-                .buttonStyle(.glass)
+                .olazGlassButtonStyle()
             }
             .controlSize(.large)
             .padding(.top, 4)

@@ -34,7 +34,7 @@ struct ConversationListSearchField: View {
         }
         .padding(.horizontal, 10)
         .frame(height: 30)
-        .glassEffect(.regular.interactive(), in: Capsule())
+        .olazGlassEffect(.regular.interactive(), in: Capsule())
         .overlay(Capsule().strokeBorder(.tint.opacity(focused ? 0.9 : 0), lineWidth: 1.5))
         .animation(.smooth(duration: 0.15), value: focused)
         .contentShape(Capsule())

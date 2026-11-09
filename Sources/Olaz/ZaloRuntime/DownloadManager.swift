@@ -638,6 +638,13 @@ struct GHASH {
     }
 
     func digest() -> [UInt8] {
-        (0..<8).map { UInt8(truncatingIfNeeded: yh >> UInt64(56 - 8 * $0)) } + (0..<8).map { UInt8(truncatingIfNeeded: yl >> UInt64(56 - 8 * $0)) }
+        var out = [UInt8]()
+        out.reserveCapacity(16)
+        for word: UInt64 in [yh, yl] {
+            for shift in stride(from: 56, through: 0, by: -8) {
+                out.append(UInt8(truncatingIfNeeded: word >> UInt64(shift)))
+            }
+        }
+        return out
     }
 }

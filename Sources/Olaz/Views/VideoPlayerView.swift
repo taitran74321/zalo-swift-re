@@ -484,7 +484,7 @@ struct VideoPlayerView: View {
     // MARK: Control bar
 
     private var controlBar: some View {
-        GlassEffectContainer(spacing: 10) {
+        OlazGlassEffectContainer(spacing: 10) {
             HStack(spacing: 10) {
                 ViewerIconButton(symbol: playSymbol, label: playLabel, help: playLabel + (playback.ended ? "" : " (Dấu cách)")) { playback.togglePlay() }
                 scrubber
@@ -537,7 +537,7 @@ struct VideoPlayerView: View {
         }
         .padding(.horizontal, 14)
         .frame(height: 34)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
     }
 
     private var volumeControl: some View {
@@ -561,6 +561,6 @@ struct VideoPlayerView: View {
         }
         .padding(.horizontal, 12)
         .frame(height: 34)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
     }
 }

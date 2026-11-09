@@ -46,7 +46,7 @@ struct CloudPreviewSheet: View {
             }
             Spacer()
             Button { dismiss() } label: { Image(systemName: "xmark") }
-                .buttonStyle(.glass).buttonBorderShape(.circle).keyboardShortcut(.cancelAction)
+                .olazGlassButtonStyle().buttonBorderShape(.circle).keyboardShortcut(.cancelAction)
         }
         .padding(.horizontal, 18).padding(.vertical, 12)
     }
@@ -102,9 +102,9 @@ struct CloudPreviewSheet: View {
             Spacer()
             if case .ready(_, let staged) = phase {
                 Button("Mở bằng ứng dụng khác") { openElsewhere(staged) }
-                    .buttonStyle(.glass).disabled(staged == nil)
+                    .olazGlassButtonStyle().disabled(staged == nil)
                 Button("Lưu về máy…", systemImage: "square.and.arrow.down") { save() }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
             }
         }
         .padding(.horizontal, 18).padding(.vertical, 12)

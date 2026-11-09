@@ -33,7 +33,7 @@ struct ConversationListLabelFilter: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(active == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
                 .frame(width: 30, height: 30)
-                .glassEffect(.regular.interactive(), in: Circle())
+                .olazGlassEffect(.regular.interactive(), in: Circle())
                 .contentShape(Circle())
         }
         .menuStyle(.button)
@@ -76,7 +76,7 @@ struct ConversationListLabelChip: View {
         }
         .padding(.leading, 10).padding(.trailing, 5)
         .frame(height: 24)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
         .accessibilityElement(children: .contain)
     }
 }

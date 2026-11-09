@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Olaz",
-    platforms: [.macOS("26.0")],
+    platforms: [.macOS(.v15)],
     targets: [
         .executableTarget(
             name: "Olaz",

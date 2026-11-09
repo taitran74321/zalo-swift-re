@@ -40,7 +40,7 @@ struct RequestsList: View {
                         }
                     }
                 }
-                .scrollEdgeEffectStyle(.soft, for: .top)
+                .olazScrollEdgeEffectStyle(.soft, for: .top)
             }
         }
         .columnTitle("Lời mời kết bạn", subtitle: "\(engine.contacts.pendingRequestCount) lời mời đang chờ")
@@ -136,11 +136,11 @@ private struct RequestCard: View {
                 ContactCardHeader(avatar: request.avatar, name: request.name, status: statusLine) {
                     HStack(spacing: 10) {
                         if received {
-                            Button("Từ chối") { perform(.decline) }.buttonStyle(.glass)
+                            Button("Từ chối") { perform(.decline) }.olazGlassButtonStyle()
                             Button { perform(.accept) } label: { Label("Đồng ý", systemImage: "checkmark") }
-                                .buttonStyle(.glassProminent)
+                                .olazGlassProminentButtonStyle()
                         } else {
-                            Button("Thu hồi lời mời") { perform(.cancel) }.buttonStyle(.glass)
+                            Button("Thu hồi lời mời") { perform(.cancel) }.olazGlassButtonStyle()
                         }
                         if busy { ProgressView().controlSize(.small) }
                     }
@@ -188,7 +188,7 @@ struct AddFriendForm: View {
                 HStack(spacing: 8) {
                     Text("🇻🇳 +84").font(.system(size: 13, weight: .medium))
                         .padding(.horizontal, 10).padding(.vertical, 7)
-                        .glassEffect(.regular, in: Capsule())
+                        .olazGlassEffect(.regular, in: Capsule())
                     HStack(spacing: 6) {
                         Image(systemName: "phone.fill").foregroundStyle(.secondary)
                         TextField("Số điện thoại", text: $phone)
@@ -198,12 +198,12 @@ struct AddFriendForm: View {
                             .onSubmit(find)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 7)
-                    .glassEffect(.regular, in: Capsule())
+                    .olazGlassEffect(.regular, in: Capsule())
                 }
                 Button(action: find) {
                     if search.status == .searching { ProgressView().controlSize(.small) } else { Text("Tìm kiếm") }
                 }
-                .buttonStyle(.glassProminent)
+                .olazGlassProminentButtonStyle()
                 .controlSize(.large)
                 .frame(maxWidth: .infinity)
                 .disabled(phone.trimmingCharacters(in: .whitespaces).isEmpty || search.status == .searching)
@@ -265,7 +265,7 @@ private struct FoundUserCard: View {
                         Button { engine.openContactConversation(user.id) } label: {
                             Label("Nhắn tin", systemImage: "bubble.left.fill")
                         }
-                        .buttonStyle(.glassProminent)
+                        .olazGlassProminentButtonStyle()
                         .controlSize(.large)
                     }
                 }
@@ -293,7 +293,7 @@ private struct FoundUserCard: View {
                     } label: {
                         if sending { ProgressView().controlSize(.small) } else { Label("Gửi lời mời kết bạn", systemImage: "person.badge.plus") }
                     }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .controlSize(.large)
                     .disabled(sending || message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .frame(maxWidth: .infinity)

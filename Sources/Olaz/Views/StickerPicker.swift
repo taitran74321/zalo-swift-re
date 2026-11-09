@@ -321,7 +321,7 @@ struct TypingStickerStrip: View {
                 .help("Bấm phím Esc để ẩn")
         }
         .frame(height: 70)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Gợi ý Sticker")
     }

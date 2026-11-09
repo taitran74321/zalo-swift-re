@@ -83,7 +83,7 @@ struct GroupCallPickerSheet: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
     }
@@ -139,10 +139,10 @@ struct GroupCallPickerSheet: View {
                     .monospacedDigit()
                 Spacer()
                 Button("Hủy") { engine.cancelGroupPicker(picker) }
-                    .buttonStyle(.glass)
+                    .olazGlassButtonStyle()
                     .keyboardShortcut(.cancelAction)
                 Button(picker.confirmTitle) { engine.confirmGroupPicker(picker, selected: selection) }
-                    .buttonStyle(.glassProminent)
+                    .olazGlassProminentButtonStyle()
                     .keyboardShortcut(.defaultAction)
                     .disabled(selection.isEmpty)
             }

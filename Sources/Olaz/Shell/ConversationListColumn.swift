@@ -107,11 +107,11 @@ struct ConversationListColumn: View {
     var body: some View {
         let listing = self.listing
         content(listing)
-            .safeAreaBar(edge: .top) { header }
+            .olazSafeAreaBar(edge: .top) { header }
             .columnTitle(title, subtitle: subtitle(listing))
             // A column whose toolbar holds nothing but the title lets the title grow into the next section on macOS 27, which pushed
             // the chat header to the right beside its buttons; the spacer takes this section's slack instead.
-            .toolbar { ToolbarSpacer(.flexible) }
+            .olazFlexibleToolbarSpacer()
             .sheet(isPresented: $showLabelManager) { LabelManagerView() }
             .background { pinShortcuts(listing.pins) }
             .task(id: shell.search) {
@@ -196,7 +196,7 @@ struct ConversationListColumn: View {
             }
         }
         .listStyle(.inset)
-        .scrollEdgeEffectStyle(.soft, for: .top)
+        .olazScrollEdgeEffectStyle(.soft, for: .top)
     }
 
     private func rows(_ items: [ListItem]) -> some View {
@@ -302,7 +302,7 @@ private struct CreateGroupButton: View {
                 .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(.secondary)
                 .frame(width: 30, height: 30)
-                .glassEffect(.regular.interactive(), in: Circle())
+                .olazGlassEffect(.regular.interactive(), in: Circle())
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)

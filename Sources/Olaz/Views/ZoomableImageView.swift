@@ -369,7 +369,7 @@ struct ViewerIconButton: View {
                 .frame(width: 20, height: 20)
                 .contentTransition(.symbolEffect(.replace))
         }
-        .buttonStyle(.glass)
+        .olazGlassButtonStyle()
         .buttonBorderShape(.circle)
         .help(help ?? label)
         .accessibilityLabel(label)
@@ -382,7 +382,7 @@ struct ZoomControls: View {
     var showsShortcuts = true
 
     var body: some View {
-        GlassEffectContainer(spacing: 8) {
+        OlazGlassEffectContainer(spacing: 8) {
             HStack(spacing: 8) {
                 ViewerIconButton(symbol: "minus.magnifyingglass", label: "Thu nhỏ", help: help("Thu nhỏ", "⌘−")) { zoom.zoomOut() }
                 Button { zoom.fit() } label: {
@@ -390,7 +390,7 @@ struct ZoomControls: View {
                         .font(.system(size: 12, weight: .medium).monospacedDigit())
                         .frame(minWidth: 38)
                 }
-                .buttonStyle(.glass)
+                .olazGlassButtonStyle()
                 .help(help("Vừa khung", "⌘9"))
                 .accessibilityLabel("Mức thu phóng")
                 .accessibilityValue("\(zoom.percent) phần trăm")

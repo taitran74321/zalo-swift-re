@@ -402,7 +402,7 @@ private struct MediaViewerContent: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
-        .glassEffect(.regular, in: Capsule())
+        .olazGlassEffect(.regular, in: Capsule())
         .accessibilityElement(children: .combine)
     }
 

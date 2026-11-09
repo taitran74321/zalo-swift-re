@@ -54,7 +54,7 @@ struct ChatComposer: View {
                 .font(.system(size: 11.5))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 11).padding(.vertical, 4)
-                .glassEffect(.regular, in: Capsule())
+                .olazGlassEffect(.regular, in: Capsule())
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .transition(.opacity)
             }
@@ -73,7 +73,7 @@ struct ChatComposer: View {
                 }
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 12).padding(.vertical, 8)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             if suggestionsOpen {
@@ -86,7 +86,7 @@ struct ChatComposer: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             // Container spacing below the stack spacing: the discs and the field stay separate shapes instead of melting together.
-            GlassEffectContainer(spacing: 4) {
+            OlazGlassEffectContainer(spacing: 4) {
                 HStack(alignment: .bottom, spacing: 8) {
                     // Extra room: with Dictation on, macOS shows its glass mic chip just left of the insertion point,
                     // which reaches past the field's leading edge.
@@ -150,7 +150,7 @@ struct ChatComposer: View {
             Image(systemName: "plus").font(.system(size: 16, weight: .semibold))
                 .frame(width: 36, height: 36)
                 .contentShape(Circle())
-                .glassEffect(.regular.interactive(), in: Circle())
+                .olazGlassEffect(.regular.interactive(), in: Circle())
         }
         .menuStyle(.button)
         .menuIndicator(.hidden)
@@ -199,7 +199,7 @@ struct ChatComposer: View {
             }
         }
         .padding(.leading, 14).padding(.trailing, 6)
-        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 19, style: .continuous))
+        .olazGlassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 19, style: .continuous))
     }
 
     /// 👍 while the box is empty, the arrow once there is something to send; the two glass discs morph into each other.
@@ -210,8 +210,8 @@ struct ChatComposer: View {
                     Text("👍").font(.system(size: 18)).frame(width: 36, height: 36).contentShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: Circle())
-                .glassEffectID("send", in: glassNamespace)
+                .olazGlassEffect(.regular.interactive(), in: Circle())
+                .olazGlassEffectID("send", in: glassNamespace)
                 .help("Gửi biểu tượng thích")
                 .accessibilityLabel("Gửi biểu tượng thích")
             } else {
@@ -220,8 +220,8 @@ struct ChatComposer: View {
                         .frame(width: 36, height: 36).contentShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.regular.tint(ChatPalette.accent(accentStored)).interactive(), in: Circle())
-                .glassEffectID("send", in: glassNamespace)
+                .olazGlassEffect(.regular.tint(ChatPalette.accent(accentStored)).interactive(), in: Circle())
+                .olazGlassEffectID("send", in: glassNamespace)
                 .help("Gửi")
                 .accessibilityLabel("Gửi tin nhắn")
             }
@@ -392,7 +392,7 @@ private struct MentionSuggestions: View {
             }
         }
         .frame(height: min(CGFloat(candidates.count) * (rowHeight + 2) + 12, 6.5 * (rowHeight + 2)))
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Gợi ý nhắc thành viên")
     }

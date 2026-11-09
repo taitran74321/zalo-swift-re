@@ -94,7 +94,7 @@ struct SetupCard<Content: View>: View {
                 .padding([.top, .trailing, .bottom], 8)
             }
             .frame(width: width, height: height)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: corner, style: .continuous))
+            .olazGlassEffect(.regular, in: RoundedRectangle(cornerRadius: corner, style: .continuous))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
